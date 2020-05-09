@@ -15,6 +15,7 @@ test_player = pyglet.resource.image('Player.png')
 grass_img = pyglet.resource.image('Grass.png')
 mountain_img = pyglet.resource.image('Mountain.png')
 hill_img = pyglet.resource.image('Hill.png')
+swamp_img = pyglet.resource.image('Swamp.png')
 
 
 
@@ -40,6 +41,7 @@ center_image(test_player)
 center_image(grass_img)
 center_image(mountain_img)
 center_image(hill_img)
+center_image(swamp_img)
 
 
 

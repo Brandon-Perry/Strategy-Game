@@ -79,7 +79,7 @@ class PhyiscalObject(pyglet.sprite.Sprite):
 
 class Player(PhyiscalObject):
 
-    def __init__(self,x=400.0,y=100.0,*args,**kwargs):
+    def __init__(self,x=400,y=100.0,*args,**kwargs):
         super().__init__(img=Resources.test_player,*args,**kwargs)
 
         self.x = x
@@ -157,11 +157,84 @@ class GamePlay(pyglet.sprite.Sprite):
             self.game_objects.remove(to_remove)
             del to_remove
 
+        if self.key_handler[key.ENTER]:
+            self.zoom_in()
+
+        if self.key_handler[key.TAB]:
+            self.zoom_out()
+
+    def zoom_in(self):
+
+        #First, find what cell each object is on prior to transformations and store that information in a dictionary
+        location_dic = {}
+
+        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
+            cell_x_coord = obj.x // terrain_obj.unit_size
+            cell_y_coord = obj.y // terrain_obj.unit_size
+
+            location_dic[obj] = (cell_x_coord,cell_y_coord)
+
+        #Then, for every game object that isn't terrain, scale that object by 1
+        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
+            try:
+                obj.scale += 1
+            except:
+                pass
+        
+        #Then, move every cell and resize so their relative positions are maintained
+        for cell in global_terrain_dict:
+            obj = global_terrain_dict[cell]
+
+            obj.terrain_sprite.x += terrain_obj.unit_size/2 * cell[0]
+            obj.terrain_sprite.y += terrain_obj.unit_size/2 * cell[1]
+          
+            obj.terrain_sprite.scale += 1
+
+        #Then, make sure that every object is back on the cell that it started with
+
+        print(location_dic)
+
+        for obj in location_dic:
+            try:
+
+                new_coord = location_dic[obj]
+                print(new_coord)
+                new_x = global_terrain_dict[new_coord].terrain_sprite.x
+                new_y = global_terrain_dict[new_coord].terrain_sprite.y
+                print(new_x,new_y)
+
+                obj.x = new_x
+                obj.y = new_y
+
+            except:
+                pass
+
+            
+
+            
+            
+
+    def zoom_out(self):
+
+        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit or item.__class__ != Terrain]:
+            try:
+                obj.scale -= 1
+            except:
+                pass
+
+        for cell in global_terrain_dict:
+            obj = global_terrain_dict[cell]
+
+            obj.terrain_sprite.x -= terrain_obj.unit_size/2 * cell[0]
+            obj.terrain_sprite.y -= terrain_obj.unit_size/2 * cell[1]
+          
+            obj.terrain_sprite.scale -= 1
+
 
 
 class Terrain(object):
 
-    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 4, hill_seed = 5, swamp_seed = 4, batch = None, *args, **kwargs):
+    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 4, hill_seed = 5, swamp_seed = 8, batch = None, *args, **kwargs):
 
         #Starting the generating at the 0,0 spot
         self.x = 0
@@ -176,8 +249,10 @@ class Terrain(object):
 
         self.dead = False
 
-        #Mountain_seed - how many random seeds does the landscape algorithm get for mountains?
+        #Seeds for generators
         self.mountain_seed = mountain_seed
+        self.hill_seed = hill_seed
+        self.swamp_seed = swamp_seed
 
         #Batch
         self.batch = batch
@@ -263,7 +338,7 @@ class Terrain(object):
 
     def hill_generator(self, hill_next_mountain = 2):
 
-        #The first part of this will make every mountain surrounded by two squares of hills to begin with
+        #The first part of this will make every mountain surrounded by two squares of hills to begin with. It also seeds a few random spots with hills for added hillyness
 
         
         for mountain in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Mountain']:
@@ -285,9 +360,23 @@ class Terrain(object):
             except:
                 pass
 
+         #Seeds the map with starting points for mountains
+        
+        
+        for _num in range(0, self.hill_seed):
+
+
+            rand_loc_x = random.randint(1,self.x_dimensions)
+            rand_loc_y = random.randint(1,self.y_dimensions)
+
+            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+                self.replace_with_hill(rand_loc_x,rand_loc_y)
+            else:
+                continue
 
         #Second part does something similar to hill generator. First it finds the edge of grass that touches hills. Then, it finds how many neighbors are hills
-        #and determines whether that grass cell should be a hill. 
+        #and determines whether that grass cell should be a hill. If a new hill is added, it detects the new edge of grass, makes sure it isn't adding it
+        #multiple times, and then adds it to the list of grass edges
 
         grass_edge = self.edge_detector('Grass','Hill')
 
@@ -317,6 +406,50 @@ class Terrain(object):
                     
             except:
                 pass
+
+
+    def swamp_generator(self):
+
+        for _num in range(0, self.swamp_seed):
+
+
+            rand_loc_x = random.randint(1,self.x_dimensions)
+            rand_loc_y = random.randint(1,self.y_dimensions)
+
+            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+                self.replace_with_swamp(rand_loc_x,rand_loc_y)
+            else:
+                continue
+
+        swamp_edge = self.edge_detector('Grass','Swamp')
+
+        already_added = []
+
+        for obj in swamp_edge:
+            
+            try: 
+                neighbors = self.find_neighbors(obj)
+
+                swamp_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Swamp'])
+
+                chance = random.random()
+
+                if (swamp_count == 1 and chance > .7) or (2 <= swamp_count <= 6 and chance > .5) or (swamp_count >= 7):
+                    self.replace_with_swamp(obj[0],obj[1])
+
+                    new_edge = self.find_neighbors(obj)
+                    
+                    for new_item in new_edge:
+                        if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
+                            swamp_edge.append(new_item)
+                            already_added.append(new_item)
+                        else:
+                            pass
+                    
+                    
+            except:
+                pass
+        
 
 
     def transform_neighbors(self,neighbors,terrain_input):
@@ -392,6 +525,32 @@ class Terrain(object):
         global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
+    def replace_with_swamp(self,x_coordinate,y_coordinate):
+
+        #First part finds and removes the square that will become the swamp
+
+
+        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+
+        new_x = dead_obj.x
+        new_y = dead_obj.y
+
+        dead_obj.dead = True
+
+        del global_terrain_dict[(x_coordinate,y_coordinate)]
+
+        #Second part creates a new swamp terrain square in the first part
+
+        new_terrain = Terrain_Unit(x_coord=x_coordinate, y_coord=y_coordinate, terrain_mov_mod=.3, terrain_type='Swamp', batch=Resources.terrain_batch)
+
+        new_terrain.x = new_x
+        new_terrain.y = new_y
+
+        game_obj.game_objects.append(new_terrain)
+
+        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+
+
     def edge_detector(self,edge,boundary):
 
         list_of_edges = []
@@ -414,8 +573,6 @@ class Terrain(object):
 
     def update(self,dt):
         pass        
-
-
 
 
 
@@ -459,22 +616,32 @@ class Terrain_Unit(Terrain):
             sprite_img = Resources.grass_img
             sprite_img.height = self.unit_size
             sprite_img.width = self.unit_size
-            sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
-            return sprite
+            grass_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            return grass_sprite
 
         #Initializes with mountain image
         elif self.terrain_type == 'Mountain':
             sprite_img = Resources.mountain_img
             sprite_img.height = self.unit_size
             sprite_img.width = self.unit_size
-            self.mountain_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            mountain_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            return mountain_sprite
 
         #Initializes with hill image
         elif self.terrain_type == 'Hill':
             sprite_img = Resources.hill_img
             sprite_img.height = self.unit_size
             sprite_img.width = self.unit_size
-            self.hill_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            hill_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            return hill_sprite
+
+        #Initializes with swamp image
+        elif self.terrain_type == 'Swamp':
+            sprite_img = Resources.swamp_img
+            sprite_img.height = self.unit_size
+            sprite_img.width = self.unit_size
+            swamp_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)  
+            return swamp_sprite
 
 
 

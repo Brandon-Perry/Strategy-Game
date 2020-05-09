@@ -17,6 +17,7 @@ window.push_handlers(Objects.global_key_handler)
 
 Objects.terrain_obj.mountain_generator()
 Objects.terrain_obj.hill_generator()
+Objects.terrain_obj.swamp_generator()
 
 
 
