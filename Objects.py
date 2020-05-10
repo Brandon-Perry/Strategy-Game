@@ -169,8 +169,8 @@ class GamePlay(pyglet.sprite.Sprite):
         location_dic = {}
 
         for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
-            cell_x_coord = obj.x // terrain_obj.unit_size
-            cell_y_coord = obj.y // terrain_obj.unit_size
+            cell_x_coord = int(obj.x // terrain_obj.unit_size)
+            cell_y_coord = int(obj.y // terrain_obj.unit_size)
 
             location_dic[obj] = (cell_x_coord,cell_y_coord)
 
@@ -192,22 +192,22 @@ class GamePlay(pyglet.sprite.Sprite):
 
         #Then, make sure that every object is back on the cell that it started with
 
-        print(location_dic)
-
         for obj in location_dic:
-            try:
+            print(obj)
+            new_coord = location_dic[obj]
+            cell = global_terrain_dict[new_coord]
+            new_x = cell.terrain_sprite.x
+            new_y = cell.terrain_sprite.y
 
-                new_coord = location_dic[obj]
-                print(new_coord)
-                new_x = global_terrain_dict[new_coord].terrain_sprite.x
-                new_y = global_terrain_dict[new_coord].terrain_sprite.y
-                print(new_x,new_y)
+            print('terrain_unit: ', global_terrain_dict[new_coord])
+            print('new_coord: ', new_coord)
+            print('new_x: ', new_x)
+            print('new_y: ', new_y)
 
-                obj.x = new_x
-                obj.y = new_y
+            obj.x = new_x
+            obj.y = new_y
 
-            except:
-                pass
+
 
             
 
