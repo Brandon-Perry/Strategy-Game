@@ -157,11 +157,25 @@ class GamePlay(pyglet.sprite.Sprite):
             self.game_objects.remove(to_remove)
             del to_remove
 
+        #Handles zoom and pan
+
         if self.key_handler[key.ENTER]:
             self.zoom_in()
 
         if self.key_handler[key.TAB]:
             self.zoom_out()
+
+        if self.key_handler[key.D]:
+            self.pan_right(10)
+
+        if self.key_handler[key.W]:
+            self.pan_up(10)
+
+        if self.key_handler[key.A]:
+            self.pan_left(10)
+
+        if self.key_handler[key.S]:
+            self.pan_down(10)
 
     def zoom_in(self):
 
@@ -191,13 +205,12 @@ class GamePlay(pyglet.sprite.Sprite):
             obj.terrain_sprite.scale += 1
 
         #Then, make sure that every object is back on the cell that it started with
-
+        
         for obj in location_dic:
             print(obj)
             new_coord = location_dic[obj]
-            cell = global_terrain_dict[new_coord]
-            new_x = cell.terrain_sprite.x
-            new_y = cell.terrain_sprite.y
+            new_x = global_terrain_dict[new_coord].x
+            new_y = global_terrain_dict[new_coord].y
 
             print('terrain_unit: ', global_terrain_dict[new_coord])
             print('new_coord: ', new_coord)
@@ -207,7 +220,7 @@ class GamePlay(pyglet.sprite.Sprite):
             obj.x = new_x
             obj.y = new_y
 
-
+        
 
             
 
@@ -229,6 +242,41 @@ class GamePlay(pyglet.sprite.Sprite):
             obj.terrain_sprite.y -= terrain_obj.unit_size/2 * cell[1]
           
             obj.terrain_sprite.scale -= 1
+
+    
+    def pan_right(self,shift_distance):
+
+        for obj in game_obj.game_objects:
+            obj.x -= shift_distance
+
+            if obj.__class__ == Terrain_Unit:
+                obj.terrain_sprite.x -= shift_distance
+
+    def pan_left(self,shift_distance):
+
+        for obj in game_obj.game_objects:
+            obj.x += shift_distance
+
+            if obj.__class__ == Terrain_Unit:
+                obj.terrain_sprite.x += shift_distance
+
+    def pan_up(self,shift_distance):
+
+        for obj in game_obj.game_objects:
+            obj.y -= shift_distance
+
+            if obj.__class__ == Terrain_Unit:
+                obj.terrain_sprite.y -= shift_distance
+
+    def pan_down(self,shift_distance):
+
+        for obj in game_obj.game_objects:
+            obj.y += shift_distance
+
+            if obj.__class__ == Terrain_Unit:
+                obj.terrain_sprite.y += shift_distance
+
+        
 
 
 
