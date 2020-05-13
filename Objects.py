@@ -144,6 +144,7 @@ class GamePlay(pyglet.sprite.Sprite):
         self.key_handler = global_key_handler
         self.enter_key_pressed = False #Makes sure there's only one action per press
         self.tab_key_pressed = False #Makes sure there's only one action per press
+        self.zoom = 1
 
 
     def update(self,dt):
@@ -164,71 +165,10 @@ class GamePlay(pyglet.sprite.Sprite):
             self.zoom_out()
 
     def zoom_in(self):
-
-        #First, find what cell each object is on prior to transformations and store that information in a dictionary
-        location_dic = {}
-
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
-            cell_x_coord = obj.x // terrain_obj.unit_size
-            cell_y_coord = obj.y // terrain_obj.unit_size
-
-            location_dic[obj] = (cell_x_coord,cell_y_coord)
-
-        #Then, for every game object that isn't terrain, scale that object by 1
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
-            try:
-                obj.scale += 1
-            except:
-                pass
-        
-        #Then, move every cell and resize so their relative positions are maintained
-        for cell in global_terrain_dict:
-            obj = global_terrain_dict[cell]
-
-            obj.terrain_sprite.x += terrain_obj.unit_size/2 * cell[0]
-            obj.terrain_sprite.y += terrain_obj.unit_size/2 * cell[1]
-          
-            obj.terrain_sprite.scale += 1
-
-        #Then, make sure that every object is back on the cell that it started with
-
-        print(location_dic)
-
-        for obj in location_dic:
-            try:
-
-                new_coord = location_dic[obj]
-                print(new_coord)
-                new_x = global_terrain_dict[new_coord].terrain_sprite.x
-                new_y = global_terrain_dict[new_coord].terrain_sprite.y
-                print(new_x,new_y)
-
-                obj.x = new_x
-                obj.y = new_y
-
-            except:
-                pass
-
-            
-
-            
-            
+        self.zoom *= 2
 
     def zoom_out(self):
-
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit or item.__class__ != Terrain]:
-            try:
-                obj.scale -= 1
-            except:
-                pass
-
-        for cell in global_terrain_dict:
-            obj = global_terrain_dict[cell]
-
-            obj.terrain_sprite.x -= terrain_obj.unit_size/2 * cell[0]
-            obj.terrain_sprite.y -= terrain_obj.unit_size/2 * cell[1]
-          
-            obj.terrain_sprite.scale -= 1
+        self.zoom /= 2
 
 
 
