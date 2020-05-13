@@ -2,6 +2,7 @@
 import pyglet 
 import math
 import random
+from pyglet.window import mouse
 
 #Game files 
 import Objects
@@ -13,6 +14,7 @@ import Functions
 #Game Window
 window = pyglet.window.Window(1000,800)
 window.push_handlers(Objects.global_key_handler)
+window.push_handlers(Objects.global_mouse_handler)
 ###
 
 Objects.terrain_obj.mountain_generator()
@@ -29,6 +31,9 @@ def update(dt):
    
     
 
+@window.event
+def on_mouse_motion(x, y, dx, dy):
+    Objects.global_mouse_coordinates = x,y
 
 
 @window.event

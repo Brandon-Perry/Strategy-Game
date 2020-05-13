@@ -9,6 +9,7 @@ pyglet.resource.reindex()
 
 #Ship images
 test_player = pyglet.resource.image('Player.png')
+spider_tank = pyglet.resource.image('Spider_Tank.png')
 
 
 #Terrain images
@@ -42,6 +43,7 @@ center_image(grass_img)
 center_image(mountain_img)
 center_image(hill_img)
 center_image(swamp_img)
+center_image(spider_tank)
 
 
 

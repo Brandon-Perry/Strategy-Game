@@ -2,10 +2,13 @@ import pyglet
 import Resources
 import math
 from pyglet.window import key
+from pyglet.window import mouse
 import Functions
 import random
 
 global_key_handler = key.KeyStateHandler()
+global_mouse_handler = mouse.MouseStateHandler()
+global_mouse_coordinates = 0,0
 
 global_terrain_dict = {}
 
@@ -80,19 +83,22 @@ class PhyiscalObject(pyglet.sprite.Sprite):
 class Player(PhyiscalObject):
 
     def __init__(self,x=400,y=100.0,*args,**kwargs):
-        super().__init__(img=Resources.test_player,*args,**kwargs)
+        super().__init__(img=Resources.spider_tank,*args,**kwargs)
 
         self.x = x
         self.y = y
 
         #Ship physics
-        self.thrust = 100.0
+        self.speed = 300.0
         self.mass = 1.0
-        self.rotate_speed = 75.0
+        self.rotate_speed = 100
         self.rotation = 0
         
         #Ship handling
         self.key_handler = global_key_handler
+        self.mouse_handler = global_mouse_handler
+        self.traveling = False
+        self.travel_to = None
 
         #Player's attributes
         self.lives = 3
@@ -104,6 +110,8 @@ class Player(PhyiscalObject):
 
 
         self.thrusters(dt)
+
+        self.path_finding(dt)
 
 
 
@@ -118,18 +126,107 @@ class Player(PhyiscalObject):
         #Thrust and deceleration
         if self.key_handler[key.UP]:
             angle_radians = -math.radians(self.rotation)
-            force_x = math.cos(angle_radians) * self.thrust * dt
-            force_y = math.sin(angle_radians) * self.thrust * dt
-     
-            self.velocity_x += force_x
-            self.velocity_y += force_y
+            self.velocity_x = math.cos(angle_radians) * self.speed * dt
+            self.velocity_y = math.sin(angle_radians) * self.speed * dt
+    
 
-        if self.key_handler[key.DOWN]:
+        if not self.key_handler[key.UP]:
+            self.velocity_x = 0
+            self.velocity_y = 0
+        
+    
+    def path_finding(self,dt):
+
+        if self.mouse_handler[mouse.LEFT]:
+            
+            self.traveling = True
+            self.travel_to = global_mouse_coordinates
+
+        self.travel_to_location(self.travel_to,dt)
+
+
+    def dijkstra_search(self, start_node, end_node, ):
+
+        #List of cells that have already ran through the algorithm, don't need to go back to
+        _already_searched = {}
+
+        #List of nodes and their shortest path values
+        node_distance = {}
+
+        #List of nodes and the nodes that are the shortest path to them
+        previous_node = {}
+
+        #Sets the value of nodes to an arbitrarily large number to start with
+        for tile in global_terrain_dict:
+            node_distance[tile] = 10^100
+
+        #Changes the value of the start node to be zero
+        node_distance[start_node] = 0
+
+
+        #The node currently being examined. Starts at start_node
+        current_node = start_node
+
+
+        
+
+
+        _search = True
+
+
+        while _search == True:
+
+            neighbors = Functions.find_neighbors(current_node)
+            
+            
+
+
+
+        
+    
+            
+
+    def travel_to_location(self,location,dt):
+        
+        
+        if self.traveling == True:
+            if round(-math.radians(self.rotation),2) < round(Functions.angle(self.position,location),2):
+                
+        
+                self.rotation -= self.rotate_speed * dt
+
+                print('less than')
+                print(Functions.angle(self.position, location))
+                print(math.radians(self.rotation))
+
+
+            elif round(-math.radians(self.rotation),2) > round(Functions.angle(self.position,location),2):
+
+                              
+                self.rotation += self.rotate_speed * dt
+
+
+                print('greater than')
+                print(Functions.angle(self.position, location))
+                print(math.radians(self.rotation))
+            else:
+                pass
+
             angle_radians = -math.radians(self.rotation)
-            force_x = math.cos(angle_radians) * self.thrust * dt
-            force_y = math.sin(angle_radians) * self.thrust * dt
-            self.velocity_x -= force_x
-            self.velocity_y -= force_y
+            self.velocity_x = math.cos(angle_radians) * self.speed * dt
+            self.velocity_y = math.sin(angle_radians) * self.speed * dt
+
+            #if ((self.position[0] - self.width/2),(self.position[1] - self.height/2)) <= location <= ((self.position[0] + self.width/2),(self.position[1] + self.height/2)):
+                #self.traveling = False
+
+            pos_x = self.position[0]
+            pos_y = self.position[1]
+
+            if (round(pos_x), round(pos_y)) == (round(location[0]),round(location[1])):
+                self.traveling = False
+
+
+    
 
 
     
@@ -209,8 +306,8 @@ class GamePlay(pyglet.sprite.Sprite):
         for obj in location_dic:
             print(obj)
             new_coord = location_dic[obj]
-            new_x = global_terrain_dict[new_coord].x
-            new_y = global_terrain_dict[new_coord].y
+            new_x = global_terrain_dict[new_coord].terrain_sprite.x
+            new_y = global_terrain_dict[new_coord].terrain_sprite.y
 
             print('terrain_unit: ', global_terrain_dict[new_coord])
             print('new_coord: ', new_coord)
@@ -282,7 +379,7 @@ class GamePlay(pyglet.sprite.Sprite):
 
 class Terrain(object):
 
-    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 4, hill_seed = 5, swamp_seed = 8, batch = None, *args, **kwargs):
+    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 8, hill_seed = 10, swamp_seed = 8, batch = None, *args, **kwargs):
 
         #Starting the generating at the 0,0 spot
         self.x = 0
@@ -354,7 +451,7 @@ class Terrain(object):
 
         for mountain in mountain_list:
             
-            neighbor_list = self.find_neighbors(mountain) #squares surrounding mountain tile
+            neighbor_list = Functions.find_neighbors(mountain) #squares surrounding mountain tile
 
             try:
 
@@ -362,7 +459,7 @@ class Terrain(object):
 
                         try:
 
-                            neighbor_of_neighbor = self.find_neighbors(neighbor)
+                            neighbor_of_neighbor = Functions.find_neighbors(neighbor)
 
                             mountain_neighbors = [obj for obj in neighbor_of_neighbor if global_terrain_dict[obj].terrain_type == 'Mountain'] #how many neighbors of neighbors are mountains?
 
@@ -393,7 +490,7 @@ class Terrain(object):
             
             try:
 
-                mountain_neighbors = self.find_neighbors(mountain)
+                mountain_neighbors = Functions.find_neighbors(mountain)
 
                 self.transform_neighbors(mountain_neighbors,'Hill')
             except:
@@ -402,7 +499,7 @@ class Terrain(object):
         for hill in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Hill']:
             try:
 
-                hill_neighbors = self.find_neighbors(hill)
+                hill_neighbors = Functions.find_neighbors(hill)
 
                 self.transform_neighbors(hill_neighbors,'Hill')
             except:
@@ -433,7 +530,7 @@ class Terrain(object):
         for obj in grass_edge:
             
             try: 
-                neighbors = self.find_neighbors(obj)
+                neighbors = Functions.find_neighbors(obj)
 
                 hill_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Hill'])
 
@@ -442,7 +539,7 @@ class Terrain(object):
                 if (hill_count == 1 and chance > .7) or (2 <= hill_count <= 6 and chance > .6) or (hill_count >= 7):
                     self.replace_with_hill(obj[0],obj[1])
 
-                    new_edge = self.find_neighbors(obj)
+                    new_edge = Functions.find_neighbors(obj)
                     
                     for new_item in new_edge:
                         if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
@@ -476,7 +573,7 @@ class Terrain(object):
         for obj in swamp_edge:
             
             try: 
-                neighbors = self.find_neighbors(obj)
+                neighbors = Functions.find_neighbors(obj)
 
                 swamp_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Swamp'])
 
@@ -485,7 +582,7 @@ class Terrain(object):
                 if (swamp_count == 1 and chance > .7) or (2 <= swamp_count <= 6 and chance > .5) or (swamp_count >= 7):
                     self.replace_with_swamp(obj[0],obj[1])
 
-                    new_edge = self.find_neighbors(obj)
+                    new_edge = Functions.find_neighbors(obj)
                     
                     for new_item in new_edge:
                         if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
@@ -510,17 +607,7 @@ class Terrain(object):
             elif terrain_input == 'Mountain':
                 self.replace_with_mountain(cell[0],cell[1])
 
-        
-    def find_neighbors(self,tuple):
 
-        x = tuple[0]
-        y = tuple[1]
-
-        neighbor_list = [(x+1,y),(x-1,y),(x,y+1),(x,y-1),(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1)]
-
-        return neighbor_list
-
- 
     def replace_with_mountain(self,x_coordinate, y_coordinate):
 
         #First part finds and removes the square that will become the mountain
@@ -607,7 +694,7 @@ class Terrain(object):
 
         for cell in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == boundary]:
             try:
-                neighbors = self.find_neighbors(cell)
+                neighbors = Functions.find_neighbors(cell)
 
                 for obj in neighbors:
                     if global_terrain_dict[obj].terrain_type == edge:
@@ -704,4 +791,6 @@ game_obj = GamePlay(x=0,y=0)
 
 game_obj.game_objects.extend([Test_Player])
 
-terrain_obj = Terrain(x_dimensions=100, y_dimensions = 80, unit_size=20, batch=Resources.terrain_batch)
+terrain_obj = Terrain(x_dimensions=200, y_dimensions = 160, unit_size=20, batch=Resources.terrain_batch)
+
+
