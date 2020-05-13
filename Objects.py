@@ -20,6 +20,10 @@ class Camera(object):
     def zoom_out(self):
         self.zoom /= 2
 
+    def pan(self, offset_x, offset_y):
+        self.x += offset_x
+        self.y += offset_y
+
     def update_sprite(self, sprite, world_x, world_y):
         sprite.x = (world_x - self.x) * self.zoom
         sprite.y = (world_y - self.y) * self.zoom
@@ -177,6 +181,19 @@ class GamePlay(pyglet.sprite.Sprite):
 
         if self.key_handler[key.TAB]:
             camera.zoom_out()
+
+        if self.key_handler[key.D]:
+            camera.pan(10, 0)
+
+        if self.key_handler[key.W]:
+            camera.pan(0, 10)
+
+        if self.key_handler[key.A]:
+            camera.pan(-10, 0)
+
+        if self.key_handler[key.S]:
+            camera.pan(0, -10)
+
 
 
 class Terrain(object):
