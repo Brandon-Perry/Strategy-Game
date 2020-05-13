@@ -7,13 +7,31 @@ import random
 
 global_key_handler = key.KeyStateHandler()
 
+class Camera(object):
+    def __init__(self, screen_width, screen_height):
+        self.x = self.y = 0.0
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.zoom = 1.0
 
-class PhyiscalObject(pyglet.sprite.Sprite):
+    def zoom_in(self):
+        self.zoom *= 2
+
+    def zoom_out(self):
+        self.zoom /= 2
+
+    def update_sprite(self, sprite, world_x, world_y):
+        sprite.x = (world_x - self.x) * self.zoom
+        sprite.y = (world_y - self.y) * self.zoom
+        sprite.scale = self.zoom
+
+
+class PhyiscalObject(object):
     
     def __init__(self, x=0.0, y=0.0, *args,**kwargs):
-        super().__init__(*args,**kwargs)
+        self.sprite = pyglet.sprite.Sprite(*args, **kwargs)
         
-        #Location of object on screen
+        #Location of object in world
         self.x = x
         self.y = y
 
@@ -34,10 +52,11 @@ class PhyiscalObject(pyglet.sprite.Sprite):
         self.dead = False
 
 
-    def update(self,dt):
+    def update(self,dt, camera):
         #Velocity and how it affects movement (dt is frame)
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
+        camera.update_sprite(self.sprite, self.x, self.y)
         #self.check_bounds()
 
     def check_bounds(self):
@@ -95,13 +114,11 @@ class Player(PhyiscalObject):
         #Player's attributes
         self.lives = 3
 
-    def update(self,dt):
+    def update(self,dt, camera):
 
-        super(Player,self).update(dt)
-
-
-
+        super(Player,self).update(dt, camera)
         self.thrusters(dt)
+        self.sprite.rotation = self.rotation
 
 
 
@@ -142,14 +159,13 @@ class GamePlay(pyglet.sprite.Sprite):
         self.key_handler = global_key_handler
         self.enter_key_pressed = False #Makes sure there's only one action per press
         self.tab_key_pressed = False #Makes sure there's only one action per press
-        self.zoom = 1
 
 
-    def update(self,dt):
+    def update(self,dt, camera):
 
         #Updates all the objects in the game_objects list
         for obj in self.game_objects:
-            obj.update(dt)
+            obj.update(dt, camera)
 
         #Checks for dead objects and removes them
         for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
@@ -157,17 +173,10 @@ class GamePlay(pyglet.sprite.Sprite):
             del to_remove
 
         if self.key_handler[key.ENTER]:
-            self.zoom_in()
+            camera.zoom_in()
 
         if self.key_handler[key.TAB]:
-            self.zoom_out()
-
-    def zoom_in(self):
-        self.zoom *= 2
-
-    def zoom_out(self):
-        self.zoom /= 2
-
+            camera.zoom_out()
 
 
 class Terrain(object):
@@ -505,10 +514,6 @@ class Terrain(object):
 
 
 
-    def update(self,dt):
-        pass        
-
-
 
 
 class Terrain_Unit(object):
@@ -546,8 +551,8 @@ class Terrain_Unit(object):
         #print(self.unit_size)
         #print(self.x_coord, self.y_coord)
 
-    def update(self,dt):
-        pass
+    def update(self,dt, camera):
+        camera.update_sprite(self.terrain_sprite, self.x, self.y)
 
     def set_terrain(self):
         

@@ -15,6 +15,8 @@ window = pyglet.window.Window(1000,800)
 window.push_handlers(Objects.global_key_handler)
 ###
 
+camera = Objects.Camera(1000, 800)
+
 Objects.terrain_obj.mountain_generator()
 Objects.terrain_obj.hill_generator()
 Objects.terrain_obj.swamp_generator()
@@ -22,7 +24,8 @@ Objects.terrain_obj.swamp_generator()
 
 
 def update(dt):
-    Objects.game_obj.update(dt)
+    global camera
+    Objects.game_obj.update(dt, camera)
 
     #checks for collisions
     #Functions.collision_check(Objects.game_obj.game_objects)
