@@ -172,20 +172,15 @@ class GamePlay(pyglet.sprite.Sprite):
 
 class Terrain(object):
 
-    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 4, hill_seed = 5, swamp_seed = 8, batch = None, *args, **kwargs):
+    def __init__(self, x_dimensions = 0, y_dimensions = 0, mountain_seed = 4, hill_seed = 5, swamp_seed = 8, batch = None, *args, **kwargs):
 
         #Starting the generating at the 0,0 spot
         self.x = 0
         self.y = 0
 
-        #Unit size is how many pixels each square is
-        self.unit_size = unit_size
-
         #Dimensions - how many squares long and across the map is
         self.x_dimensions = x_dimensions
         self.y_dimensions = y_dimensions
-
-        self.dead = False
 
         #Seeds for generators
         self.mountain_seed = mountain_seed
@@ -516,12 +511,19 @@ class Terrain(object):
 
 
 
-class Terrain_Unit(Terrain):
+class Terrain_Unit(object):
 
-    def __init__(self, x_coord = 0, y_coord = 0, terrain_mov_mod = 1, terrain_type='Grass', *args, **kwargs):
+    def __init__(self, x_coord = 0, y_coord = 0, unit_size = 10, terrain_mov_mod = 1, terrain_type='Grass', batch = None, *args, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
+        #Unit size is how many pixels each square is
+        self.unit_size = unit_size
+
+        #Batch
+        self.batch = batch
+
+        self.dead = False
 
         #Initiatlizes grid coordinates for the map
         self.x_coord = x_coord
@@ -545,8 +547,7 @@ class Terrain_Unit(Terrain):
         #print(self.x_coord, self.y_coord)
 
     def update(self,dt):
-
-        super(Terrain_Unit,self).update(dt)
+        pass
 
     def set_terrain(self):
         
