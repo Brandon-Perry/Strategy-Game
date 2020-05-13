@@ -7,8 +7,6 @@ import random
 
 global_key_handler = key.KeyStateHandler()
 
-global_terrain_dict = {}
-
 
 class PhyiscalObject(pyglet.sprite.Sprite):
     
@@ -198,6 +196,7 @@ class Terrain(object):
         self.batch = batch
 
         #On startup, launch generate_landscape_grid
+        self.terrain_dict = {}
         self.generate_landscape_grid()
         
 
@@ -214,7 +213,7 @@ class Terrain(object):
                 y_gen += 1
 
                 game_obj.game_objects.append(terrain_unit_obj)
-                global_terrain_dict[(terrain_unit_obj.x_coord,terrain_unit_obj.y_coord)] = terrain_unit_obj
+                self.terrain_dict[(terrain_unit_obj.x_coord,terrain_unit_obj.y_coord)] = terrain_unit_obj
 
                 if y_gen >= self.y_dimensions:
                     y_gen = 0
@@ -240,7 +239,7 @@ class Terrain(object):
         #tiles adjacent are mountains. Each time the algorithm checks the original mountain tile, it is removed from the list. New mountain tiles are added to the list.
 
         
-        mountain_list = [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Mountain']
+        mountain_list = [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Mountain']
 
         #while len(mountain_list) != 0:
 
@@ -250,13 +249,13 @@ class Terrain(object):
 
             try:
 
-                for neighbor in [obj for obj in neighbor_list if global_terrain_dict[obj].terrain_type != 'Mountain']:
+                for neighbor in [obj for obj in neighbor_list if self.terrain_dict[obj].terrain_type != 'Mountain']:
 
                         try:
 
                             neighbor_of_neighbor = self.find_neighbors(neighbor)
 
-                            mountain_neighbors = [obj for obj in neighbor_of_neighbor if global_terrain_dict[obj].terrain_type == 'Mountain'] #how many neighbors of neighbors are mountains?
+                            mountain_neighbors = [obj for obj in neighbor_of_neighbor if self.terrain_dict[obj].terrain_type == 'Mountain'] #how many neighbors of neighbors are mountains?
 
                             neighbor_count = len(mountain_neighbors)
 
@@ -281,7 +280,7 @@ class Terrain(object):
         #The first part of this will make every mountain surrounded by two squares of hills to begin with. It also seeds a few random spots with hills for added hillyness
 
         
-        for mountain in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Mountain']:
+        for mountain in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Mountain']:
             
             try:
 
@@ -291,7 +290,7 @@ class Terrain(object):
             except:
                 pass
 
-        for hill in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Hill']:
+        for hill in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Hill']:
             try:
 
                 hill_neighbors = self.find_neighbors(hill)
@@ -309,7 +308,7 @@ class Terrain(object):
             rand_loc_x = random.randint(1,self.x_dimensions)
             rand_loc_y = random.randint(1,self.y_dimensions)
 
-            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+            if self.terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
                 self.replace_with_hill(rand_loc_x,rand_loc_y)
             else:
                 continue
@@ -327,7 +326,7 @@ class Terrain(object):
             try: 
                 neighbors = self.find_neighbors(obj)
 
-                hill_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Hill'])
+                hill_count = len([cell for cell in neighbors if self.terrain_dict[cell].terrain_type == 'Hill'])
 
                 chance = random.random()
 
@@ -337,7 +336,7 @@ class Terrain(object):
                     new_edge = self.find_neighbors(obj)
                     
                     for new_item in new_edge:
-                        if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
+                        if new_item not in already_added and self.terrain_dict[new_item].terrain_type == 'Grass':
                             grass_edge.append(new_item)
                             already_added.append(new_item)
                         else:
@@ -356,7 +355,7 @@ class Terrain(object):
             rand_loc_x = random.randint(1,self.x_dimensions)
             rand_loc_y = random.randint(1,self.y_dimensions)
 
-            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+            if self.terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
                 self.replace_with_swamp(rand_loc_x,rand_loc_y)
             else:
                 continue
@@ -370,7 +369,7 @@ class Terrain(object):
             try: 
                 neighbors = self.find_neighbors(obj)
 
-                swamp_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Swamp'])
+                swamp_count = len([cell for cell in neighbors if self.terrain_dict[cell].terrain_type == 'Swamp'])
 
                 chance = random.random()
 
@@ -380,7 +379,7 @@ class Terrain(object):
                     new_edge = self.find_neighbors(obj)
                     
                     for new_item in new_edge:
-                        if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
+                        if new_item not in already_added and self.terrain_dict[new_item].terrain_type == 'Grass':
                             swamp_edge.append(new_item)
                             already_added.append(new_item)
                         else:
@@ -394,7 +393,7 @@ class Terrain(object):
 
     def transform_neighbors(self,neighbors,terrain_input):
 
-        for cell in [obj for obj in neighbors if global_terrain_dict[obj].terrain_type == 'Grass']:
+        for cell in [obj for obj in neighbors if self.terrain_dict[obj].terrain_type == 'Grass']:
 
             if terrain_input == 'Hill':
                 self.replace_with_hill(cell[0],cell[1])
@@ -418,14 +417,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the mountain
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new mountain terrain square in the first part
 
@@ -436,7 +435,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def replace_with_hill(self,x_coordinate,y_coordinate):
@@ -444,14 +443,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the hill
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new hill terrain square in the first part
 
@@ -462,7 +461,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def replace_with_swamp(self,x_coordinate,y_coordinate):
@@ -470,14 +469,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the swamp
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new swamp terrain square in the first part
 
@@ -488,7 +487,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def edge_detector(self,edge,boundary):
@@ -497,12 +496,12 @@ class Terrain(object):
 
         #Search through every instance of the boundary and see which cells are the edge
 
-        for cell in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == boundary]:
+        for cell in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == boundary]:
             try:
                 neighbors = self.find_neighbors(cell)
 
                 for obj in neighbors:
-                    if global_terrain_dict[obj].terrain_type == edge:
+                    if self.terrain_dict[obj].terrain_type == edge:
                         list_of_edges.append(obj)
             except:
                 pass
