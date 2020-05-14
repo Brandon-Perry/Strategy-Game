@@ -10,15 +10,35 @@ global_key_handler = key.KeyStateHandler()
 global_mouse_handler = mouse.MouseStateHandler()
 global_mouse_coordinates = 0,0
 
-global_terrain_dict = {}
+class Camera(object):
+    def __init__(self, screen_width, screen_height):
+        self.x = self.y = 0.0
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.zoom = 1.0
+
+    def zoom_in(self):
+        self.zoom *= 2
+
+    def zoom_out(self):
+        self.zoom /= 2
+
+    def pan(self, offset_x, offset_y):
+        self.x += offset_x
+        self.y += offset_y
+
+    def update_sprite(self, sprite, world_x, world_y):
+        sprite.x = (world_x - self.x) * self.zoom
+        sprite.y = (world_y - self.y) * self.zoom
+        sprite.scale = self.zoom
 
 
-class PhyiscalObject(pyglet.sprite.Sprite):
+class PhyiscalObject(object):
     
     def __init__(self, x=0.0, y=0.0, *args,**kwargs):
-        super().__init__(*args,**kwargs)
+        self.sprite = pyglet.sprite.Sprite(*args, **kwargs)
         
-        #Location of object on screen
+        #Location of object in world
         self.x = x
         self.y = y
 
@@ -39,10 +59,11 @@ class PhyiscalObject(pyglet.sprite.Sprite):
         self.dead = False
 
 
-    def update(self,dt):
+    def update(self,dt, camera):
         #Velocity and how it affects movement (dt is frame)
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
+        camera.update_sprite(self.sprite, self.x, self.y)
         #self.check_bounds()
 
     def check_bounds(self):
@@ -103,13 +124,11 @@ class Player(PhyiscalObject):
         #Player's attributes
         self.lives = 3
 
-    def update(self,dt):
+    def update(self,dt, camera):
 
-        super(Player,self).update(dt)
-
-
-
+        super(Player,self).update(dt, camera)
         self.thrusters(dt)
+        self.sprite.rotation = self.rotation
 
         self.path_finding(dt)
 
@@ -243,11 +262,11 @@ class GamePlay(pyglet.sprite.Sprite):
         self.tab_key_pressed = False #Makes sure there's only one action per press
 
 
-    def update(self,dt):
+    def update(self,dt, camera):
 
         #Updates all the objects in the game_objects list
         for obj in self.game_objects:
-            obj.update(dt)
+            obj.update(dt, camera)
 
         #Checks for dead objects and removes them
         for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
@@ -257,88 +276,22 @@ class GamePlay(pyglet.sprite.Sprite):
         #Handles zoom and pan
 
         if self.key_handler[key.ENTER]:
-            self.zoom_in()
+            camera.zoom_in()
 
         if self.key_handler[key.TAB]:
-            self.zoom_out()
+            camera.zoom_out()
 
         if self.key_handler[key.D]:
-            self.pan_right(10)
+            camera.pan(10, 0)
 
         if self.key_handler[key.W]:
-            self.pan_up(10)
+            camera.pan(0, 10)
 
         if self.key_handler[key.A]:
-            self.pan_left(10)
+            camera.pan(-10, 0)
 
         if self.key_handler[key.S]:
-            self.pan_down(10)
-
-    def zoom_in(self):
-
-        #First, find what cell each object is on prior to transformations and store that information in a dictionary
-        location_dic = {}
-
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
-            cell_x_coord = int(obj.x // terrain_obj.unit_size)
-            cell_y_coord = int(obj.y // terrain_obj.unit_size)
-
-            location_dic[obj] = (cell_x_coord,cell_y_coord)
-
-        #Then, for every game object that isn't terrain, scale that object by 1
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit]:
-            try:
-                obj.scale += 1
-            except:
-                pass
-        
-        #Then, move every cell and resize so their relative positions are maintained
-        for cell in global_terrain_dict:
-            obj = global_terrain_dict[cell]
-
-            obj.terrain_sprite.x += terrain_obj.unit_size/2 * cell[0]
-            obj.terrain_sprite.y += terrain_obj.unit_size/2 * cell[1]
-          
-            obj.terrain_sprite.scale += 1
-
-        #Then, make sure that every object is back on the cell that it started with
-        
-        for obj in location_dic:
-            print(obj)
-            new_coord = location_dic[obj]
-            new_x = global_terrain_dict[new_coord].terrain_sprite.x
-            new_y = global_terrain_dict[new_coord].terrain_sprite.y
-
-            print('terrain_unit: ', global_terrain_dict[new_coord])
-            print('new_coord: ', new_coord)
-            print('new_x: ', new_x)
-            print('new_y: ', new_y)
-
-            obj.x = new_x
-            obj.y = new_y
-
-        
-
-            
-
-            
-            
-
-    def zoom_out(self):
-
-        for obj in [item for item in self.game_objects if item.__class__ != Terrain_Unit or item.__class__ != Terrain]:
-            try:
-                obj.scale -= 1
-            except:
-                pass
-
-        for cell in global_terrain_dict:
-            obj = global_terrain_dict[cell]
-
-            obj.terrain_sprite.x -= terrain_obj.unit_size/2 * cell[0]
-            obj.terrain_sprite.y -= terrain_obj.unit_size/2 * cell[1]
-          
-            obj.terrain_sprite.scale -= 1
+            camera.pan(0, -10)
 
     
     def pan_right(self,shift_distance):
@@ -379,20 +332,15 @@ class GamePlay(pyglet.sprite.Sprite):
 
 class Terrain(object):
 
-    def __init__(self, x_dimensions = 0, y_dimensions = 0, unit_size = 10, mountain_seed = 8, hill_seed = 10, swamp_seed = 8, batch = None, *args, **kwargs):
+    def __init__(self, x_dimensions = 0, y_dimensions = 0, mountain_seed = 4, hill_seed = 5, swamp_seed = 8, batch = None, *args, **kwargs):
 
         #Starting the generating at the 0,0 spot
         self.x = 0
         self.y = 0
 
-        #Unit size is how many pixels each square is
-        self.unit_size = unit_size
-
         #Dimensions - how many squares long and across the map is
         self.x_dimensions = x_dimensions
         self.y_dimensions = y_dimensions
-
-        self.dead = False
 
         #Seeds for generators
         self.mountain_seed = mountain_seed
@@ -403,6 +351,7 @@ class Terrain(object):
         self.batch = batch
 
         #On startup, launch generate_landscape_grid
+        self.terrain_dict = {}
         self.generate_landscape_grid()
         
 
@@ -419,7 +368,7 @@ class Terrain(object):
                 y_gen += 1
 
                 game_obj.game_objects.append(terrain_unit_obj)
-                global_terrain_dict[(terrain_unit_obj.x_coord,terrain_unit_obj.y_coord)] = terrain_unit_obj
+                self.terrain_dict[(terrain_unit_obj.x_coord,terrain_unit_obj.y_coord)] = terrain_unit_obj
 
                 if y_gen >= self.y_dimensions:
                     y_gen = 0
@@ -445,7 +394,7 @@ class Terrain(object):
         #tiles adjacent are mountains. Each time the algorithm checks the original mountain tile, it is removed from the list. New mountain tiles are added to the list.
 
         
-        mountain_list = [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Mountain']
+        mountain_list = [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Mountain']
 
         #while len(mountain_list) != 0:
 
@@ -455,13 +404,13 @@ class Terrain(object):
 
             try:
 
-                for neighbor in [obj for obj in neighbor_list if global_terrain_dict[obj].terrain_type != 'Mountain']:
+                for neighbor in [obj for obj in neighbor_list if self.terrain_dict[obj].terrain_type != 'Mountain']:
 
                         try:
 
                             neighbor_of_neighbor = Functions.find_neighbors(neighbor)
 
-                            mountain_neighbors = [obj for obj in neighbor_of_neighbor if global_terrain_dict[obj].terrain_type == 'Mountain'] #how many neighbors of neighbors are mountains?
+                            mountain_neighbors = [obj for obj in neighbor_of_neighbor if self.terrain_dict[obj].terrain_type == 'Mountain'] #how many neighbors of neighbors are mountains?
 
                             neighbor_count = len(mountain_neighbors)
 
@@ -486,7 +435,7 @@ class Terrain(object):
         #The first part of this will make every mountain surrounded by two squares of hills to begin with. It also seeds a few random spots with hills for added hillyness
 
         
-        for mountain in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Mountain']:
+        for mountain in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Mountain']:
             
             try:
 
@@ -496,7 +445,7 @@ class Terrain(object):
             except:
                 pass
 
-        for hill in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == 'Hill']:
+        for hill in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == 'Hill']:
             try:
 
                 hill_neighbors = Functions.find_neighbors(hill)
@@ -514,7 +463,7 @@ class Terrain(object):
             rand_loc_x = random.randint(1,self.x_dimensions)
             rand_loc_y = random.randint(1,self.y_dimensions)
 
-            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+            if self.terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
                 self.replace_with_hill(rand_loc_x,rand_loc_y)
             else:
                 continue
@@ -532,7 +481,7 @@ class Terrain(object):
             try: 
                 neighbors = Functions.find_neighbors(obj)
 
-                hill_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Hill'])
+                hill_count = len([cell for cell in neighbors if self.terrain_dict[cell].terrain_type == 'Hill'])
 
                 chance = random.random()
 
@@ -542,7 +491,7 @@ class Terrain(object):
                     new_edge = Functions.find_neighbors(obj)
                     
                     for new_item in new_edge:
-                        if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
+                        if new_item not in already_added and self.terrain_dict[new_item].terrain_type == 'Grass':
                             grass_edge.append(new_item)
                             already_added.append(new_item)
                         else:
@@ -561,7 +510,7 @@ class Terrain(object):
             rand_loc_x = random.randint(1,self.x_dimensions)
             rand_loc_y = random.randint(1,self.y_dimensions)
 
-            if global_terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
+            if self.terrain_dict[rand_loc_x,rand_loc_y].terrain_type == 'Grass':
                 self.replace_with_swamp(rand_loc_x,rand_loc_y)
             else:
                 continue
@@ -575,7 +524,7 @@ class Terrain(object):
             try: 
                 neighbors = Functions.find_neighbors(obj)
 
-                swamp_count = len([cell for cell in neighbors if global_terrain_dict[cell].terrain_type == 'Swamp'])
+                swamp_count = len([cell for cell in neighbors if self.terrain_dict[cell].terrain_type == 'Swamp'])
 
                 chance = random.random()
 
@@ -585,7 +534,7 @@ class Terrain(object):
                     new_edge = Functions.find_neighbors(obj)
                     
                     for new_item in new_edge:
-                        if new_item not in already_added and global_terrain_dict[new_item].terrain_type == 'Grass':
+                        if new_item not in already_added and self.terrain_dict[new_item].terrain_type == 'Grass':
                             swamp_edge.append(new_item)
                             already_added.append(new_item)
                         else:
@@ -599,7 +548,7 @@ class Terrain(object):
 
     def transform_neighbors(self,neighbors,terrain_input):
 
-        for cell in [obj for obj in neighbors if global_terrain_dict[obj].terrain_type == 'Grass']:
+        for cell in [obj for obj in neighbors if self.terrain_dict[obj].terrain_type == 'Grass']:
 
             if terrain_input == 'Hill':
                 self.replace_with_hill(cell[0],cell[1])
@@ -613,14 +562,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the mountain
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new mountain terrain square in the first part
 
@@ -631,7 +580,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def replace_with_hill(self,x_coordinate,y_coordinate):
@@ -639,14 +588,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the hill
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new hill terrain square in the first part
 
@@ -657,7 +606,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def replace_with_swamp(self,x_coordinate,y_coordinate):
@@ -665,14 +614,14 @@ class Terrain(object):
         #First part finds and removes the square that will become the swamp
 
 
-        dead_obj = global_terrain_dict[(x_coordinate,y_coordinate)]
+        dead_obj = self.terrain_dict[(x_coordinate,y_coordinate)]
 
         new_x = dead_obj.x
         new_y = dead_obj.y
 
         dead_obj.dead = True
 
-        del global_terrain_dict[(x_coordinate,y_coordinate)]
+        del self.terrain_dict[(x_coordinate,y_coordinate)]
 
         #Second part creates a new swamp terrain square in the first part
 
@@ -683,7 +632,7 @@ class Terrain(object):
 
         game_obj.game_objects.append(new_terrain)
 
-        global_terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
+        self.terrain_dict[(x_coordinate,y_coordinate)] = new_terrain
 
 
     def edge_detector(self,edge,boundary):
@@ -692,12 +641,12 @@ class Terrain(object):
 
         #Search through every instance of the boundary and see which cells are the edge
 
-        for cell in [obj for obj in global_terrain_dict if global_terrain_dict[obj].terrain_type == boundary]:
+        for cell in [obj for obj in self.terrain_dict if self.terrain_dict[obj].terrain_type == boundary]:
             try:
                 neighbors = Functions.find_neighbors(cell)
 
                 for obj in neighbors:
-                    if global_terrain_dict[obj].terrain_type == edge:
+                    if self.terrain_dict[obj].terrain_type == edge:
                         list_of_edges.append(obj)
             except:
                 pass
@@ -706,18 +655,21 @@ class Terrain(object):
 
 
 
-    def update(self,dt):
-        pass        
 
 
+class Terrain_Unit(object):
 
+    def __init__(self, x_coord = 0, y_coord = 0, unit_size = 10, terrain_mov_mod = 1, terrain_type='Grass', batch = None, *args, **kwargs):
 
-class Terrain_Unit(Terrain):
+        super().__init__()
 
-    def __init__(self, x_coord = 0, y_coord = 0, terrain_mov_mod = 1, terrain_type='Grass', *args, **kwargs):
+        #Unit size is how many pixels each square is
+        self.unit_size = unit_size
 
-        super().__init__(*args, **kwargs)
+        #Batch
+        self.batch = batch
 
+        self.dead = False
 
         #Initiatlizes grid coordinates for the map
         self.x_coord = x_coord
@@ -740,9 +692,8 @@ class Terrain_Unit(Terrain):
         #print(self.unit_size)
         #print(self.x_coord, self.y_coord)
 
-    def update(self,dt):
-
-        super(Terrain_Unit,self).update(dt)
+    def update(self,dt, camera):
+        camera.update_sprite(self.terrain_sprite, self.x, self.y)
 
     def set_terrain(self):
         
@@ -791,6 +742,4 @@ game_obj = GamePlay(x=0,y=0)
 
 game_obj.game_objects.extend([Test_Player])
 
-terrain_obj = Terrain(x_dimensions=200, y_dimensions = 160, unit_size=20, batch=Resources.terrain_batch)
-
-
+terrain_obj = Terrain(x_dimensions=100, y_dimensions = 80, unit_size=20, batch=Resources.terrain_batch)
