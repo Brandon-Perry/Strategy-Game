@@ -65,14 +65,14 @@ class PhyiscalObject(object):
         self.y += self.velocity_y * dt
         camera.update_sprite(self.sprite, self.x, self.y)
         #self.check_bounds()
-
+    
     def check_bounds(self):
         #Once the map size has been established, can use this function
         #if item reaches the edges of the map, then it stops them from going any further
-        min_x = self.width / 2
-        min_y = self.height / 2
-        max_x = 800 - self.width / 2
-        max_y = 600 - self.height / 2
+        min_x = self.sprite.width / 2
+        min_y = self.sprite.height / 2
+        max_x = 800 - self.sprite.width / 2
+        max_y = 600 - self.sprite.height / 2
         if self.x <= min_x:
             self.x = min_x
             self.velocity_x = 0
@@ -85,13 +85,13 @@ class PhyiscalObject(object):
         elif self.y >= max_y:
             self.y = max_y
             self.velocity_y = 0
-    
+        
     def collides_with(self,other_object):
         
 
         #Calculates collision distance 
-        collision_distance = self.width/2 + other_object.width/2
-        actual_distance = Functions.distance(self.position,other_object.position)
+        collision_distance = self.sprite.width/2 + other_object.width/2
+        actual_distance = Functions.distance(self.sprite.position,other_object.position)
         return (actual_distance <= collision_distance)
     
     def handle_collision_with(self,other_object): 
@@ -100,7 +100,6 @@ class PhyiscalObject(object):
 
         
   
-
 class Player(PhyiscalObject):
 
     def __init__(self,x=400,y=100.0,*args,**kwargs):
@@ -176,7 +175,7 @@ class Player(PhyiscalObject):
         previous_node = {}
 
         #Sets the value of nodes to an arbitrarily large number to start with
-        for tile in global_terrain_dict:
+        for tile in terrain_obj.terrain_dict:
             node_distance[tile] = 10^100
 
         #Changes the value of the start node to be zero
@@ -209,24 +208,24 @@ class Player(PhyiscalObject):
         
         
         if self.traveling == True:
-            if round(-math.radians(self.rotation),2) < round(Functions.angle(self.position,location),2):
+            if round(-math.radians(self.rotation),2) < round(Functions.angle(self.sprite.position,location),2):
                 
         
                 self.rotation -= self.rotate_speed * dt
 
                 print('less than')
-                print(Functions.angle(self.position, location))
+                print(Functions.angle(self.sprite.position, location))
                 print(math.radians(self.rotation))
 
 
-            elif round(-math.radians(self.rotation),2) > round(Functions.angle(self.position,location),2):
+            elif round(-math.radians(self.rotation),2) > round(Functions.angle(self.sprite.position,location),2):
 
                               
                 self.rotation += self.rotate_speed * dt
 
 
                 print('greater than')
-                print(Functions.angle(self.position, location))
+                print(Functions.angle(self.sprite.position, location))
                 print(math.radians(self.rotation))
             else:
                 pass
@@ -238,8 +237,8 @@ class Player(PhyiscalObject):
             #if ((self.position[0] - self.width/2),(self.position[1] - self.height/2)) <= location <= ((self.position[0] + self.width/2),(self.position[1] + self.height/2)):
                 #self.traveling = False
 
-            pos_x = self.position[0]
-            pos_y = self.position[1]
+            pos_x = self.sprite.position[0]
+            pos_y = self.sprite.position[1]
 
             if (round(pos_x), round(pos_y)) == (round(location[0]),round(location[1])):
                 self.traveling = False
@@ -273,61 +272,7 @@ class GamePlay(pyglet.sprite.Sprite):
             self.game_objects.remove(to_remove)
             del to_remove
 
-        #Handles zoom and pan
-
-        if self.key_handler[key.ENTER]:
-            camera.zoom_in()
-
-        if self.key_handler[key.TAB]:
-            camera.zoom_out()
-
-        if self.key_handler[key.D]:
-            camera.pan(10, 0)
-
-        if self.key_handler[key.W]:
-            camera.pan(0, 10)
-
-        if self.key_handler[key.A]:
-            camera.pan(-10, 0)
-
-        if self.key_handler[key.S]:
-            camera.pan(0, -10)
-
-    
-    def pan_right(self,shift_distance):
-
-        for obj in game_obj.game_objects:
-            obj.x -= shift_distance
-
-            if obj.__class__ == Terrain_Unit:
-                obj.terrain_sprite.x -= shift_distance
-
-    def pan_left(self,shift_distance):
-
-        for obj in game_obj.game_objects:
-            obj.x += shift_distance
-
-            if obj.__class__ == Terrain_Unit:
-                obj.terrain_sprite.x += shift_distance
-
-    def pan_up(self,shift_distance):
-
-        for obj in game_obj.game_objects:
-            obj.y -= shift_distance
-
-            if obj.__class__ == Terrain_Unit:
-                obj.terrain_sprite.y -= shift_distance
-
-    def pan_down(self,shift_distance):
-
-        for obj in game_obj.game_objects:
-            obj.y += shift_distance
-
-            if obj.__class__ == Terrain_Unit:
-                obj.terrain_sprite.y += shift_distance
-
         
-
 
 
 class Terrain(object):
@@ -652,8 +597,6 @@ class Terrain(object):
                 pass
 
         return list_of_edges
-
-
 
 
 
