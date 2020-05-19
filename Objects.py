@@ -111,7 +111,7 @@ class Player(PhyiscalObject):
         #Ship physics
         self.speed = 300.0
         self.mass = 1.0
-        self.rotate_speed = 100
+        self.rotate_speed = 25
         self.rotation = 0
         
         #Ship handling
@@ -131,6 +131,8 @@ class Player(PhyiscalObject):
 
         self.path_finding(dt)
 
+        if self.key_handler[key.P]:
+            print(terrain_obj.terrain_dict)
 
 
     def thrusters(self,dt):
@@ -155,31 +157,68 @@ class Player(PhyiscalObject):
     
     def path_finding(self,dt):
 
-        if self.mouse_handler[mouse.LEFT]:
+        if self.mouse_handler[mouse.LEFT] and self.traveling == False:
             
             self.traveling = True
-            self.travel_to = global_mouse_coordinates
 
-        self.travel_to_location(self.travel_to,dt)
+            
 
 
-    def dijkstra_search(self, start_node, end_node, ):
+            self.dijkstra_search(self.player_cell_location(), self.click_cell_location(global_mouse_coordinates))
+
+        #self.travel_to_location(self.travel_to,dt)
+
+    
+    def player_cell_location(self):
+
+        player_position = self.x,self.y
+
+        for coord in terrain_obj.terrain_dict:
+
+            cell = terrain_obj.terrain_dict[coord]
+            #print(cell)
+
+            if cell.sprite.x - cell.sprite.width/2 <= player_position[0] <= cell.sprite.x + cell.sprite.width/2 \
+                and cell.sprite.y - cell.sprite.height/2 <= player_position[1] <= cell.sprite.y + cell.sprite.height/2:
+
+                return coord
+
+
+    def click_cell_location(self,global_mouse_coordinates):
+
+        mouse_position = global_mouse_coordinates
+
+        for coord in terrain_obj.terrain_dict:
+
+            cell = terrain_obj.terrain_dict[coord]
+
+            if cell.sprite.x - cell.sprite.width/2 < mouse_position[0] < cell.sprite.x + cell.sprite.width/2 \
+                and cell.sprite.y - cell.sprite.height/2 < mouse_position[1] < cell.sprite.y + cell.sprite.height/2:
+
+                return coord
+
+
+
+    def dijkstra_search(self, start_node, end_node):
 
         #List of cells that have already ran through the algorithm, don't need to go back to
-        _already_searched = {}
+        already_searched = []
 
-        #List of nodes and their shortest path values
+        #List of nodes and their (total) shortest path values
         node_distance = {}
 
         #List of nodes and the nodes that are the shortest path to them
         previous_node = {}
 
-        #Sets the value of nodes to an arbitrarily large number to start with
-        for tile in terrain_obj.terrain_dict:
-            node_distance[tile] = 10^100
+        #Priority Que
+        priority_que = []
 
-        #Changes the value of the start node to be zero
-        node_distance[start_node] = 0
+        #Sets the value of nodes to an arbitrarily large number to start with
+        for node in terrain_obj.terrain_dict:
+            node_distance[node] = 10^100000
+
+        #Changes the value of the start node to be zero.
+        node_distance.update({start_node:0})
 
 
         #The node currently being examined. Starts at start_node
@@ -189,15 +228,78 @@ class Player(PhyiscalObject):
         
 
 
-        _search = True
+        dijkstra_search = True
+    
 
-
-        while _search == True:
-
+        while dijkstra_search == True:
+            
+            #Search the neighbors of the current node
             neighbors = Functions.find_neighbors(current_node)
-            
-            
 
+            
+            for cell in [obj for obj in neighbors if obj not in already_searched]:
+                
+                try:
+                    #Find the distance from the current node to the neighbor node
+
+
+                    cell_obj = terrain_obj.terrain_dict[cell]
+                    current_node_obj = terrain_obj.terrain_dict[current_node]
+
+                    #Create exception for mountain tiles
+                    if cell_obj.terrain_type == "Mountain":
+                        continue
+
+                    distance = Functions.distance(cell_obj.sprite.position,current_node_obj.sprite.position) / current_node_obj.terrain_mov_mod
+
+                    #If the total distance (distance to neighbor node and the neighbor node's to the beginning) is smaller that what's already
+                    #Listed, then update the distance and path dictionary
+                    total_distance = distance + node_distance[current_node]
+                    #print(total_distance)
+                    #print(node_distance[cell])
+                    #print(cell)
+
+                    if total_distance < node_distance[cell]:
+                        node_distance.update({cell:total_distance})
+                        #print('node distance',node_distance[cell])
+                        previous_node.update({cell:current_node})
+                        #print('previous node',previous_node[cell])
+                        priority_que.append(cell)
+                        #print(priority_que)
+                except KeyError:
+                    pass
+
+            #Adds the current cell to the list of already searched spaces
+            already_searched.append(current_node)
+            if current_node in priority_que:
+                priority_que.remove(current_node)
+            #print(already_searched)
+
+            #Finds the lowest value in the priority que and sets it to the current node
+            current_node = priority_que[0]
+            for coord in [obj for obj in priority_que if terrain_obj.terrain_dict[obj].terrain_type != 'Mountain']:
+                if node_distance[coord] < node_distance[current_node]:
+                    current_node = coord
+
+            #print(current_node)
+            
+            if end_node in already_searched:
+                path_result = [end_node]
+                step_in_path = end_node
+                path_search = True
+                while path_search == True:
+                    x = previous_node[step_in_path]
+                    path_result.append(x)
+                    step_in_path = x
+                    
+                    if step_in_path == start_node:
+                        #path_result.append(start_node)
+                        print(path_result)
+                        return path_result
+
+
+            
+    
 
 
         
@@ -227,21 +329,23 @@ class Player(PhyiscalObject):
                 print('greater than')
                 print(Functions.angle(self.sprite.position, location))
                 print(math.radians(self.rotation))
+            
+            
             else:
-                pass
+                
 
-            angle_radians = -math.radians(self.rotation)
-            self.velocity_x = math.cos(angle_radians) * self.speed * dt
-            self.velocity_y = math.sin(angle_radians) * self.speed * dt
+                angle_radians = -math.radians(self.rotation)
+                self.velocity_x = math.cos(angle_radians) * self.speed * dt
+                self.velocity_y = math.sin(angle_radians) * self.speed * dt
 
-            #if ((self.position[0] - self.width/2),(self.position[1] - self.height/2)) <= location <= ((self.position[0] + self.width/2),(self.position[1] + self.height/2)):
-                #self.traveling = False
+                #if ((self.position[0] - self.width/2),(self.position[1] - self.height/2)) <= location <= ((self.position[0] + self.width/2),(self.position[1] + self.height/2)):
+                    #self.traveling = False
 
-            pos_x = self.sprite.position[0]
-            pos_y = self.sprite.position[1]
+                pos_x = self.sprite.position[0]
+                pos_y = self.sprite.position[1]
 
-            if (round(pos_x), round(pos_y)) == (round(location[0]),round(location[1])):
-                self.traveling = False
+                if (round(pos_x), round(pos_y)) == (round(location[0]),round(location[1])):
+                    self.traveling = False
 
 
     
@@ -628,7 +732,7 @@ class Terrain_Unit(object):
         #Set sprite
         self.terrain_type = terrain_type
  
-        self.terrain_sprite = self.set_terrain()
+        self.sprite = self.set_terrain()
 
 
         #print('Terrain unit initialized')
@@ -636,7 +740,7 @@ class Terrain_Unit(object):
         #print(self.x_coord, self.y_coord)
 
     def update(self,dt, camera):
-        camera.update_sprite(self.terrain_sprite, self.x, self.y)
+        camera.update_sprite(self.sprite, self.x, self.y)
 
     def set_terrain(self):
         
