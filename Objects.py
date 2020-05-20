@@ -131,8 +131,6 @@ class Player(PhyiscalObject):
 
         self.path_finding(dt)
 
-        if self.key_handler[key.P]:
-            print(terrain_obj.terrain_dict)
 
 
     def thrusters(self,dt):
@@ -164,7 +162,8 @@ class Player(PhyiscalObject):
             
 
 
-            self.dijkstra_search(self.player_cell_location(), self.click_cell_location(global_mouse_coordinates))
+            path = self.dijkstra_search(self.player_cell_location(), self.click_cell_location(global_mouse_coordinates))
+            self.draw_path(path)
 
         #self.travel_to_location(self.travel_to,dt)
 
@@ -298,7 +297,13 @@ class Player(PhyiscalObject):
                         return path_result
 
 
-            
+    def draw_path(self,path_list):
+
+        for cell in path_list:
+
+            tile = terrain_obj.terrain_dict[cell]
+
+            tile.sprite = Resources.black_img
     
 
 
@@ -375,6 +380,28 @@ class GamePlay(pyglet.sprite.Sprite):
         for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
             self.game_objects.remove(to_remove)
             del to_remove
+
+        #Handles Camera zooming and panning
+        if self.key_handler[key.ENTER]:
+            camera.zoom_in()
+
+        if self.key_handler[key.TAB]:
+            camera.zoom_out()
+
+        if self.key_handler[key.W]:
+            camera.pan(0,10)
+
+        if self.key_handler[key.A]:
+            camera.pan(-10,0)
+        
+        if self.key_handler[key.D]:
+            camera.pan(10,0)
+
+        if self.key_handler[key.S]:
+            camera.pan(0,-10)
+
+        
+        
 
         
 
@@ -775,6 +802,13 @@ class Terrain_Unit(object):
             sprite_img.width = self.unit_size
             swamp_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)  
             return swamp_sprite
+
+        elif self.terrain_type == 'Black':
+            sprite_img = Resources.black_img
+            sprite_img.height = self.unit_size
+            sprite_img.width = self.unit_size
+            black_sprite = pyglet.sprite.Sprite(sprite_img, x = self.x, y = self.y, batch = self.batch)
+            return black_sprite
 
 
 

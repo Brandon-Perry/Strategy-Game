@@ -17,6 +17,7 @@ grass_img = pyglet.resource.image('Grass.png')
 mountain_img = pyglet.resource.image('Mountain.png')
 hill_img = pyglet.resource.image('Hill.png')
 swamp_img = pyglet.resource.image('Swamp.png')
+black_img = pyglet.resource.image('Black.png')
 
 
 
@@ -44,6 +45,7 @@ center_image(mountain_img)
 center_image(hill_img)
 center_image(swamp_img)
 center_image(spider_tank)
+center_image(black_img)
 
 
 
