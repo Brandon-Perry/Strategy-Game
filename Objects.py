@@ -108,6 +108,8 @@ class Player(PhyiscalObject):
         self.x = x
         self.y = y
 
+        #self.sprite = pyglet.sprite.Sprite(img= Resources.spider_tank)
+
         #Ship physics
         self.speed = 300.0
         self.mass = 1.0
@@ -155,7 +157,7 @@ class Player(PhyiscalObject):
     
     def path_finding(self,dt):
 
-        if self.mouse_handler[mouse.LEFT] and self.traveling == False:
+        if self.mouse_handler[mouse.LEFT]:
             
             self.traveling = True
 
@@ -177,8 +179,14 @@ class Player(PhyiscalObject):
             cell = terrain_obj.terrain_dict[coord]
             #print(cell)
 
-            if cell.sprite.x - cell.sprite.width/2 <= player_position[0] <= cell.sprite.x + cell.sprite.width/2 \
-                and cell.sprite.y - cell.sprite.height/2 <= player_position[1] <= cell.sprite.y + cell.sprite.height/2:
+            if (cell.x - (cell.unit_size/2) <= player_position[0] <= cell.x + (cell.unit_size/2)) \
+                and (cell.y - (cell.unit_size/2) <= player_position[1] <= cell.y + (cell.unit_size/2)):
+
+                print('player posx',player_position[0])
+                print('player posy', player_position[1])
+                print('cellx',cell.x)
+                print('celly,',cell.y)
+                print('coord',coord)
 
                 return coord
 
@@ -191,8 +199,14 @@ class Player(PhyiscalObject):
 
             cell = terrain_obj.terrain_dict[coord]
 
-            if cell.sprite.x - cell.sprite.width/2 < mouse_position[0] < cell.sprite.x + cell.sprite.width/2 \
-                and cell.sprite.y - cell.sprite.height/2 < mouse_position[1] < cell.sprite.y + cell.sprite.height/2:
+            if (cell.sprite.x - cell.sprite.width/2 <= mouse_position[0] <= cell.sprite.x + cell.sprite.width/2) \
+                and (cell.sprite.y - cell.sprite.height/2 <= mouse_position[1] <= cell.sprite.y + cell.sprite.height/2):
+
+                print('clickx',mouse_position[0])
+                print('clicky',mouse_position[1])
+                print('cellx',cell.x)
+                print('celly',cell.y)
+                print('coord',coord)
 
                 return coord
 
@@ -249,7 +263,7 @@ class Player(PhyiscalObject):
                     if cell_obj.terrain_type == "Mountain":
                         continue
 
-                    distance = Functions.distance(cell_obj.sprite.position,current_node_obj.sprite.position) / current_node_obj.terrain_mov_mod
+                    distance = Functions.distance((cell_obj.x,cell_obj.y),(current_node_obj.x,current_node_obj.y)) / current_node_obj.terrain_mov_mod
 
                     #If the total distance (distance to neighbor node and the neighbor node's to the beginning) is smaller that what's already
                     #Listed, then update the distance and path dictionary
@@ -283,19 +297,22 @@ class Player(PhyiscalObject):
             #print(current_node)
             
             if end_node in already_searched:
-                path_result = [end_node]
-                step_in_path = end_node
-                path_search = True
-                while path_search == True:
-                    x = previous_node[step_in_path]
-                    path_result.append(x)
-                    step_in_path = x
-                    
-                    if step_in_path == start_node:
-                        #path_result.append(start_node)
-                        print(path_result)
-                        return path_result
-
+                try:
+                    path_result = [end_node]
+                    step_in_path = end_node
+                    path_search = True
+                    while path_search == True:
+                        x = previous_node[step_in_path]
+                        path_result.append(x)
+                        step_in_path = x
+                        
+                        if step_in_path == start_node:
+                            #path_result.append(start_node)
+                            print(path_result)
+                            print('player sprite loc',self.sprite.position)
+                            return path_result
+                except:
+                    pass
 
     def draw_path(self,path_list):
 
@@ -307,9 +324,6 @@ class Player(PhyiscalObject):
     
 
 
-        
-    
-            
 
     def travel_to_location(self,location,dt):
         
@@ -402,9 +416,6 @@ class GamePlay(pyglet.sprite.Sprite):
 
         
         
-
-        
-
 
 class Terrain(object):
 
@@ -823,4 +834,4 @@ game_obj = GamePlay(x=0,y=0)
 
 game_obj.game_objects.extend([Test_Player])
 
-terrain_obj = Terrain(x_dimensions=100, y_dimensions = 80, unit_size=20, batch=Resources.terrain_batch)
+terrain_obj = Terrain(x_dimensions=100, y_dimensions = 100, unit_size=10, batch=Resources.terrain_batch)
