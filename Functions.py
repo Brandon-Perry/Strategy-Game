@@ -32,7 +32,7 @@ def find_neighbors(tuple):
     neighbor_list = [(x+1,y),(x-1,y),(x,y+1),(x,y-1),(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1)]
 
     return neighbor_list
-
+ 
 
 
 

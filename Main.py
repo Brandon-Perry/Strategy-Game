@@ -6,48 +6,39 @@ from pyglet.window import mouse
 
 #Game files 
 import Objects
+import Players
 import Resources
 import Functions
+import Window
+
 
 
 ###
 #Game Window
-window = pyglet.window.Window(1000,800)
-window.push_handlers(Objects.global_key_handler)
-window.push_handlers(Objects.global_mouse_handler)
+
 ###
 
 camera = Objects.Camera(1000, 800)
 
-Objects.terrain_obj.mountain_generator()
-Objects.terrain_obj.hill_generator()
-Objects.terrain_obj.swamp_generator()
+Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse])
 
 
 
 def update(dt):
-    global camera
-    Objects.game_obj.update(dt, camera)
-
-    #checks for collisions
-    #Functions.collision_check(Objects.game_obj.game_objects)
-   
+    
+   Objects.game_obj.update(dt,camera)
     
 
-@window.event
-def on_mouse_motion(x, y, dx, dy):
-    Objects.global_mouse_coordinates = x,y
 
 
-@window.event
+@Window.window.event
 def on_draw():
-    window.clear()
-    
-    Resources.terrain_batch.draw()
+    Window.window.clear()
+
     Resources.player_batch.draw()
-        
-        
-            
+    
+
+
 
 if __name__ == "__main__":
     pyglet.clock.schedule_interval(update,1/120.0)
