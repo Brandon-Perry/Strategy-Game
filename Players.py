@@ -20,7 +20,7 @@ class Player(Physical_Object.PhyiscalObject):
         self.x = x
         self.y = y
 
-        #self.sprite = pyglet.sprite.Sprite(img= Resources.spider_tank)
+        self.sprite = pyglet.sprite.Sprite(img= Resources.spider_tank, batch = Resources.player_batch)
 
         #Ship physics
         self.speed = 300.0
@@ -40,6 +40,19 @@ class Player(Physical_Object.PhyiscalObject):
         super(Player,self).update(dt, camera)
         self.sprite.rotation = self.rotation
 
+        if self.key_handler[key.W]:
+            self.velocity_x += self.speed * dt
+
+        if self.key_handler[key.S]:
+            self.velocity_x -= self.speed * dt
+
+        if self.key_handler[key.A]:
+            self.sprite.rotation -= self.rotation * dt
+
+        if self.key_handler[key.D]:
+            self.sprite.rotation += self.rotation * dt
+
+        
 
 
 ###Initializing Objects####

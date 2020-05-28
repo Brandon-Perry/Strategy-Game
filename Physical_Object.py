@@ -14,6 +14,7 @@ import random
 class PhyiscalObject(object):
     
     def __init__(self, x=0.0, y=0.0, *args,**kwargs):
+
         self.sprite = pyglet.sprite.Sprite(*args, **kwargs)
         
         #Location of object in world

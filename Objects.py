@@ -74,16 +74,16 @@ class GamePlay(object):
         if self.key_handler[key.TAB]:
             camera.zoom_out()
 
-        if self.key_handler[key.W]:
+        if self.key_handler[key.UP]:
             camera.pan(0,10)
 
-        if self.key_handler[key.A]:
+        if self.key_handler[key.LEFT]:
             camera.pan(-10,0)
         
-        if self.key_handler[key.D]:
+        if self.key_handler[key.RIGHT]:
             camera.pan(10,0)
 
-        if self.key_handler[key.S]:
+        if self.key_handler[key.DOWN]:
             camera.pan(0,-10)
 
 
@@ -119,10 +119,10 @@ class Mouse(object):
         if self.outside_down:
             camera.pan(0,1)
 
-        if self.outside_right:
+        if self.outside_left:
             camera.pan(-1,0)
         
-        if self.outside_left:
+        if self.outside_right:
             camera.pan(1,0)
 
         if self.outside_up:

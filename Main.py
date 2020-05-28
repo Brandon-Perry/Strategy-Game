@@ -7,6 +7,7 @@ from pyglet.window import mouse
 #Game files 
 import Objects
 import Players
+import Terrain
 import Resources
 import Functions
 import Window
@@ -20,7 +21,7 @@ import Window
 
 camera = Objects.Camera(1000, 800)
 
-Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse])
+Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse,Terrain.terrain_obj])
 
 
 
@@ -34,6 +35,8 @@ def update(dt):
 @Window.window.event
 def on_draw():
     Window.window.clear()
+    
+    Resources.terrain_batch.draw()
 
     Resources.player_batch.draw()
     
