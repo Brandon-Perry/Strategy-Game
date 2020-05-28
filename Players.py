@@ -41,16 +41,29 @@ class Player(Physical_Object.PhyiscalObject):
         self.sprite.rotation = self.rotation
 
         if self.key_handler[key.W]:
-            self.velocity_x += self.speed * dt
+            
+            angle_radians = -math.radians(self.rotation)
+
+            vector_x = math.cos(angle_radians) * self.speed * dt
+            vector_y = math.sin(angle_radians) * self.speed * dt
+            
+            self.x += vector_x
+            self.y += vector_y
 
         if self.key_handler[key.S]:
-            self.velocity_x -= self.speed * dt
+            angle_radians = -math.radians(self.rotation)
+
+            vector_x = math.cos(angle_radians) * self.speed * dt
+            vector_y = math.sin(angle_radians) * self.speed * dt
+            
+            self.x -= vector_x
+            self.y -= vector_y
 
         if self.key_handler[key.A]:
-            self.sprite.rotation -= self.rotation * dt
+            self.rotation -= self.rotate_speed * dt
 
         if self.key_handler[key.D]:
-            self.sprite.rotation += self.rotation * dt
+            self.rotation += self.rotate_speed * dt
 
         
 
