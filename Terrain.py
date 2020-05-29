@@ -73,7 +73,7 @@ class Terrain_Unit(object):
 
         self.dead = False
 
-        self.sprite = pyglet.sprite.Sprite(img = self.init_cell(), batch = Resources.terrain_batch)
+        self.sprite = pyglet.sprite.Sprite(img = self.init_cell(), x = self.x, y = self.y, batch = Resources.terrain_batch)
 
         self.sprite.image.height = self.sprite.image.width = self.size
 
