@@ -39,16 +39,17 @@ class Terrain(object):
     def init_terrain(self):
         #Initializes a grid of grass cells the size of the specified dimensions
 
-        for width in range(0,self.dimensions[0]):
+        for dim_x in range(0,self.dimensions[0]):
 
-            for height in range(0,self.dimensions[1]):
+            for dim_y in range(0,self.dimensions[1]):
 
-                cell_y = self.unit_size * height
-                cell_x = self.unit_size * width
+                cell_y = self.unit_size * dim_x
+                cell_x = self.unit_size * dim_y
 
-                new_cell = Terrain_Unit(x = cell_x, y = cell_y, coord = (width+1, height+1), size = self.unit_size, terrain_type = 'Grass')
+                new_cell = Terrain_Unit(x = cell_x, y = cell_y, coord = (dim_x+1, dim_y+1), size = self.unit_size, terrain_type = 'Grass')
                 Objects.game_obj.game_objects.append(new_cell)
                 self.terrain_dict[new_cell.coord] = new_cell 
+
 
         for coord in self.terrain_dict:
             print(coord,self.terrain_dict[coord].sprite.x,self.terrain_dict[coord].sprite.y)
@@ -77,9 +78,10 @@ class Terrain_Unit(object):
 
         self.sprite.image.height = self.sprite.image.width = self.size
 
+
     def init_cell(self):
 
-        if self.terrain_type == 'Grass':
+        if self.terrain_type == 'Grass': 
             self.terrain_mov_mod = 1
 
             return Resources.grass_img
