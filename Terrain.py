@@ -1,6 +1,7 @@
 import pyglet
 import Resources
 import Functions
+import Objects
 
 import math
 from pyglet.window import key
@@ -22,38 +23,85 @@ class Terrain(object):
 
         self.dead = False
 
+        self.terrain_dict = {}
 
+        #Runs init_terrain upon initialization
+        self.init_terrain()
+
+           
         
-        self.sprite = pyglet.sprite.Sprite(img = self.load_checker_sprite(), batch = batch, *args, **kwargs)
-
-
-
-
-    def load_checker_sprite(self):
-
-
-        checker_img = pyglet.image.CheckerImagePattern(color1=(150, 150, 150, 255), color2=(200, 200, 200, 255))
-        sprite_img = checker_img.create_image(self.dimensions[0],self.dimensions[1])
-
-        Resources.center_image(sprite_img)
-
-
-
-        return sprite_img
-
-        
-        
-        
-
-
     def update(self,dt,camera):
  
-        camera.update_sprite(self.sprite, self.x, self.y)
+        #camera.update_sprite(self.sprite, self.x, self.y)
+        pass
 
-        
-        
+    
+    def init_terrain(self):
+        #Initializes a grid of grass cells the size of the specified dimensions
 
+        for width in range(0,self.dimensions[0]):
+
+            for height in range(0,self.dimensions[1]):
+
+                cell_y = self.unit_size * height
+                cell_x = self.unit_size * width
+
+                new_cell = Terrain_Unit(x = cell_x, y = cell_y, coord = (width+1, height+1), size = self.unit_size, terrain_type = 'Grass')
+                Objects.game_obj.game_objects.append(new_cell)
+                self.terrain_dict[new_cell.coord] = new_cell 
+
+        for coord in self.terrain_dict:
+            print(coord,self.terrain_dict[coord].sprite.x,self.terrain_dict[coord].sprite.y)
+                
+
+
+
+class Terrain_Unit(object):
+    
+    def __init__(self, x = 0, y = 0, coord = (0,0), terrain_type = None, size = 0, *args, **kwargs):
+
+        self.x = x
+        self.y = y
+
+        self.coord = coord
+
+        self.terrain_type = terrain_type
+
+        self.terrain_mov_mod = 0
+
+        self.size = size
+
+        self.dead = False
+
+        self.sprite = pyglet.sprite.Sprite(img = self.init_cell(), batch = Resources.terrain_batch)
+
+        self.sprite.image.height = self.sprite.image.width = self.size
+
+    def init_cell(self):
+
+        if self.terrain_type == 'Grass':
+            self.terrain_mov_mod = 1
+
+            return Resources.grass_img
+
+        if self.terrain_type == 'Hill':
+            self.terrain_mov_mod = 3
+
+            return Resources.hill_img
+
+        if self.terrain_type =='Mountain':
+            self.terrain_mov_mod = 1000
+
+            return Resources.mountain_img
+
+        if self.terrain_type == 'Swamp':
+            self.terrain_mov_mod = 2
+
+            return Resources.swamp_img
+
+    def update(self,dt,camera):
+        camera.update_sprite(self.sprite,self.x,self.y)
 
 
 ###Initializes Object###
-terrain_obj = Terrain(x = 400, y = 300, dimensions = (1000,1000), unit_size=10, batch = Resources.terrain_batch)
+terrain_obj = Terrain(x = 400, y = 300, dimensions = (20,20), unit_size=20, batch = Resources.terrain_batch)

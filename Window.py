@@ -17,14 +17,12 @@ def on_mouse_motion(x,y,dx,dy):
     Objects.game_mouse.x = x
     Objects.game_mouse.y = y
 
-    print(Objects.game_mouse.x,Objects.game_mouse.y)
 
 
 @window.event
 def on_mouse_scroll(x,y,scroll_x,scroll_y):
 
     Objects.game_mouse.scroll += (scroll_y/10)
-    print(Objects.game_mouse.scroll)
         
 @window.event
 def on_mouse_leave(x,y):
