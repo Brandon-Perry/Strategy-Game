@@ -39,6 +39,8 @@ class Camera(object):
         sprite.x = (world_x - self.x) * self.zoom
         sprite.y = (world_y - self.y) * self.zoom
         sprite.scale = self.zoom
+        
+        
 
 
 

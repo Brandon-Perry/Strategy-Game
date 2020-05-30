@@ -14,7 +14,7 @@ import random
   
 class Player(Physical_Object.PhyiscalObject):
 
-    def __init__(self,x=400,y=100.0,*args,**kwargs):
+    def __init__(self,x=0,y=0,*args,**kwargs):
         super().__init__(img=Resources.spider_tank,*args,**kwargs)
 
         self.x = x

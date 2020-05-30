@@ -4,7 +4,7 @@ import Objects
 
 
 
-window = pyglet.window.Window(1000,800)
+window = pyglet.window.Window(500,500)
 window.push_handlers(Objects.global_key_handler)
 window.push_handlers(Objects.global_mouse_handler)
 
