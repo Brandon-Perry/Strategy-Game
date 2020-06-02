@@ -57,6 +57,9 @@ class GamePlay(object):
         self.enter_key_pressed = False #Makes sure there's only one action per press
         self.tab_key_pressed = False #Makes sure there's only one action per press
 
+        #Map Mode
+        self.map_mode = 'Main'
+
 
     def update(self,dt, camera):
 
@@ -87,6 +90,16 @@ class GamePlay(object):
 
         if self.key_handler[key.DOWN]:
             camera.pan(0,-10)
+
+
+        #Handles Map Mode keys
+
+        if self.key_handler[key.M]:
+            if self.map_mode == 'Main':
+                self.map_mode = 'Map Editor'
+            elif self.map_mode == 'Map Editor':
+                self.map_mode = 'Main'
+
 
 
 

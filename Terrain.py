@@ -28,12 +28,16 @@ class Terrain(object):
         #Runs init_terrain upon initialization
         self.init_terrain()
 
+        self.camera_position = None
+        self.camera_zoom = 1
+
            
         
     def update(self,dt,camera):
  
         #camera.update_sprite(self.sprite, self.x, self.y)
-        pass
+        self.camera_position = (camera.x,camera.y)
+        self.camera_position = camera.zoom
 
     
     def init_terrain(self):
@@ -50,11 +54,19 @@ class Terrain(object):
                 Objects.game_obj.game_objects.append(new_cell)
                 self.terrain_dict[new_cell.coord] = new_cell 
 
+    
+    def replace_cell(self,location,t_type):
 
-    def replace_cell(self,location,type):
+        print('ran replace_cell')
 
-        self.terrain_dict[location].terrain_type = type
+        
+
+        self.terrain_dict[location].terrain_type = t_type
+
         self.terrain_dict[location].sprite.image = self.terrain_dict[location].init_cell()
+
+        self.terrain_dict[location].set_size()
+    
 
 
     def generate_map_data(self,map_num):
@@ -137,8 +149,33 @@ class Terrain(object):
             self.terrain_dict[new_cell.coord] = new_cell
             Objects.game_obj.game_objects.append(new_cell)
         
+      
+    def map_editor_function(self,x,y):
+       
         
 
+        for coord in self.terrain_dict:
+            cell = self.terrain_dict[coord]
+
+            if cell.sprite.x - cell.sprite.width/2 < x < cell.sprite.x + cell.sprite.width/2 and \
+                cell.sprite.y - cell.sprite.height < y < cell.sprite.y + cell.sprite.height:
+
+                if cell.terrain_type == 'Grass':
+                    self.replace_cell(coord,'Hill')
+                elif cell.terrain_type == 'Hill':
+                    self.replace_cell(coord,'Swamp')
+                elif cell.terrain_type == 'Swamp':
+                    self.replace_cell(coord,'Mountain')
+                elif cell.terrain_type == 'Mountain':
+                    self.replace_cell(coord,'Grass')
+
+
+
+                print(x,y)
+                print(cell.sprite.x,cell.sprite.y)
+    
+            
+                break
 
 class Terrain_Unit(object):
     
@@ -159,11 +196,13 @@ class Terrain_Unit(object):
 
         self.sprite = pyglet.sprite.Sprite(img = self.init_cell(), x = self.x, y = self.y, batch = Resources.terrain_batch)
 
-        self.sprite.image.height = self.sprite.image.width = self.size
+        self.set_size()
+
 
 
     def init_cell(self):
 
+        print('init_cell ran')
         if self.terrain_type == 'Grass': 
             self.terrain_mov_mod = 1
 
@@ -183,6 +222,10 @@ class Terrain_Unit(object):
             self.terrain_mov_mod = 2
 
             return Resources.swamp_img
+
+    def set_size(self):
+
+        self.sprite.image.height = self.sprite.image.width = self.size
 
     def update(self,dt,camera):
         camera.update_sprite(self.sprite,self.x,self.y)
