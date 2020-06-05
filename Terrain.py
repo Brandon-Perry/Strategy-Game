@@ -31,6 +31,9 @@ class Terrain(object):
         self.camera_position = None
         self.camera_zoom = 1
 
+        #Handles keys
+        self.key_handler = Objects.global_key_handler
+
            
         
     def update(self,dt,camera):
@@ -39,7 +42,9 @@ class Terrain(object):
         self.camera_position = (camera.x,camera.y)
         self.camera_position = camera.zoom
 
-    
+        #Map Saving and loading handled in Window.py
+        
+                
     def init_terrain(self):
         #Initializes a grid of grass cells the size of the specified dimensions
 
@@ -54,10 +59,9 @@ class Terrain(object):
                 Objects.game_obj.game_objects.append(new_cell)
                 self.terrain_dict[new_cell.coord] = new_cell 
 
+    ####Functions for map editing
     
     def replace_cell(self,location,t_type):
-
-        print('ran replace_cell')
 
         
 
@@ -67,29 +71,58 @@ class Terrain(object):
 
         self.terrain_dict[location].set_size()
     
+          
+    def map_editor_function(self,x,y):
+       
+        
 
+        for coord in self.terrain_dict:
+            cell = self.terrain_dict[coord]
 
+            if cell.sprite.x - cell.sprite.width/2 < x < cell.sprite.x + cell.sprite.width/2 and \
+                cell.sprite.y - cell.sprite.height/2 < y < cell.sprite.y + cell.sprite.height/2:
+
+                if cell.terrain_type == 'Grass':
+                    self.replace_cell(coord,'Hill')
+                elif cell.terrain_type == 'Hill':
+                    self.replace_cell(coord,'Swamp')
+                elif cell.terrain_type == 'Swamp':
+                    self.replace_cell(coord,'Mountain')
+                elif cell.terrain_type == 'Mountain':
+                    self.replace_cell(coord,'Grass')
+
+    
+            
+                break
+
+    ####Functions for saving and loading maps
     def generate_map_data(self,map_num):
 
         map_file = open("Map_Databases/" + map_num + ".txt","w")
 
-        #cell_list = []
+        
+        cell_count_x = range(1,self.dimensions[0]+1)
+        cell_count_y = range(1,self.dimensions[1]+1)
 
-        for coord in self.terrain_dict:
+        for x in cell_count_x:
 
-            terrain_type = self.terrain_dict[coord].terrain_type
+            for y in cell_count_y:
+        
 
-            if coord[1] == 1 and coord[0] != 1:
-                map_file.write('-\n')
+                terrain_type = self.terrain_dict[(y,x)].terrain_type
 
-            if terrain_type == 'Grass':
-                map_file.write('0')
-            elif terrain_type == 'Swamp':
-                map_file.write('1')
-            elif terrain_type == 'Hill':
-                map_file.write('2')
-            elif terrain_type == 'Mountain':
-                map_file.write('3')
+
+                if y == 1 and x != 1:
+                    map_file.write('-\n')
+
+                if terrain_type == 'Grass':
+                    map_file.write('0')
+                elif terrain_type == 'Swamp':
+                    map_file.write('1')
+                elif terrain_type == 'Hill':
+                    map_file.write('2')
+                elif terrain_type == 'Mountain':
+                    map_file.write('3')
 
 
     def construct_map(self,map_num):
@@ -113,8 +146,6 @@ class Terrain(object):
 
         for sym in map_file.read():
             
-            print((sym))
-
             if sym == '-':
                 y_coord += 1
                 x_coord = 1
@@ -148,34 +179,51 @@ class Terrain(object):
             new_cell = Terrain_Unit(x = x_pos, y = y_pos, coord = (x_coord,y_coord), terrain_type=terrain_string, size=self.unit_size)
             self.terrain_dict[new_cell.coord] = new_cell
             Objects.game_obj.game_objects.append(new_cell)
+    
+    ####Functions for navigation
+    def return_click_location(self,x,y):
         
-      
-    def map_editor_function(self,x,y):
-       
-        
-
-        for coord in self.terrain_dict:
+        for coord in self.terrain_dict[coord]:
+            
             cell = self.terrain_dict[coord]
 
             if cell.sprite.x - cell.sprite.width/2 < x < cell.sprite.x + cell.sprite.width/2 and \
-                cell.sprite.y - cell.sprite.height < y < cell.sprite.y + cell.sprite.height:
-
-                if cell.terrain_type == 'Grass':
-                    self.replace_cell(coord,'Hill')
-                elif cell.terrain_type == 'Hill':
-                    self.replace_cell(coord,'Swamp')
-                elif cell.terrain_type == 'Swamp':
-                    self.replace_cell(coord,'Mountain')
-                elif cell.terrain_type == 'Mountain':
-                    self.replace_cell(coord,'Grass')
+                    cell.sprite.y - cell.sprite.height/2 < y < cell.sprite.y + cell.sprite.height/2:
+                    
+                    return cell
 
 
+    ####Functions for Dijkstra search
+    def return_neighbors(self,coord):
 
-                print(x,y)
-                print(cell.sprite.x,cell.sprite.y)
-    
-            
-                break
+        x = coord[0]
+        y = coord[1]
+
+        neighbor_list = [(x+1,y),(x-1,y),(x,y+1),(x,y-1),(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1)]
+
+        return neighbor_list
+
+
+    def Dijkstra_algorithm(self,start_node,end_node):
+
+        already_search = []
+
+        shortest_path_value = {}
+
+        previous_node = {}
+
+        search_que = {}
+
+        #Initial sets all distances as very large
+        for node in self.terrain_dict:
+            shortest_path_value[node] = 10^10000
+
+        searching = True
+
+        #Begins search for the shortest path
+        while searching == True:
+
+            pass
 
 class Terrain_Unit(object):
     
@@ -202,7 +250,6 @@ class Terrain_Unit(object):
 
     def init_cell(self):
 
-        print('init_cell ran')
         if self.terrain_type == 'Grass': 
             self.terrain_mov_mod = 1
 
@@ -226,6 +273,7 @@ class Terrain_Unit(object):
     def set_size(self):
 
         self.sprite.image.height = self.sprite.image.width = self.size
+        Resources.center_image(self.sprite.image)
 
     def update(self,dt,camera):
         camera.update_sprite(self.sprite,self.x,self.y)

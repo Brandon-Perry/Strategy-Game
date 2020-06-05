@@ -29,15 +29,18 @@ black_img = pyglet.resource.image('Black.png')
 #Centers images
 def center_image(image):
     #sets an image's anchor point to its center
-    
+
     image.anchor_x = image.width // 2
     image.anchor_y = image.height // 2
+    
 
 def animation_center(anim):
+    
+    
     for f in anim.frames:
         f.image.anchor_x = f.image.width // 2
         f.image.anchor_y = f.image.height // 2
-
+    
 
 center_image(test_player)
 center_image(grass_img)

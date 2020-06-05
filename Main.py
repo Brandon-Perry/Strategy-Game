@@ -13,7 +13,7 @@ import Functions
 import Window
 import Screens
 
-
+Terrain.terrain_obj.construct_map('4')
 
 ###
 #Game Window
@@ -26,6 +26,8 @@ Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse,Ter
 
 
 
+
+
 def update(dt):
     
    Objects.game_obj.update(dt,camera)
@@ -35,7 +37,7 @@ def update(dt):
 @Window.window.event
 def on_draw():
     
-    Screens.screen_display(Objects.game_obj.map_mode)
+    Screens.screen_display(Objects.game_obj.game_state)
     
 
 

@@ -57,8 +57,8 @@ class GamePlay(object):
         self.enter_key_pressed = False #Makes sure there's only one action per press
         self.tab_key_pressed = False #Makes sure there's only one action per press
 
-        #Map Mode
-        self.map_mode = 'Main'
+        #Game State - Tells the applications what ought to be ran on the screen. Includes things such as map mode, levels, etc.
+        self.game_state = 'Main'
 
 
     def update(self,dt, camera):
@@ -72,12 +72,7 @@ class GamePlay(object):
             self.game_objects.remove(to_remove)
             del to_remove
 
-        #Handles Camera zooming and panning
-        #if self.mouse_handler[button.LEFT]:
-            #camera.zoom_in()
-
-        if self.key_handler[key.TAB]:
-            camera.zoom_out()
+        #Handles Camera panning operations from the keyboard
 
         if self.key_handler[key.UP]:
             camera.pan(0,10)
@@ -95,10 +90,10 @@ class GamePlay(object):
         #Handles Map Mode keys
 
         if self.key_handler[key.M]:
-            if self.map_mode == 'Main':
-                self.map_mode = 'Map Editor'
-            elif self.map_mode == 'Map Editor':
-                self.map_mode = 'Main'
+            if self.game_state == 'Main':
+                self.game_state = 'Map Editor'
+            elif self.game_state == 'Map Editor':
+                self.game_state = 'Main'
 
 
 
