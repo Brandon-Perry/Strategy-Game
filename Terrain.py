@@ -34,17 +34,17 @@ class Terrain(object):
         #Handles keys
         self.key_handler = Objects.global_key_handler
 
-           
-        
+
+
     def update(self,dt,camera):
- 
+
         #camera.update_sprite(self.sprite, self.x, self.y)
         self.camera_position = (camera.x,camera.y)
         self.camera_position = camera.zoom
 
         #Map Saving and loading handled in Window.py
-        
-                
+
+
     def init_terrain(self):
         #Initializes a grid of grass cells the size of the specified dimensions
 
@@ -57,24 +57,24 @@ class Terrain(object):
 
                 new_cell = Terrain_Unit(x = cell_x, y = cell_y, coord = (dim_x+1, dim_y+1), size = self.unit_size, terrain_type = 'Grass')
                 Objects.game_obj.game_objects.append(new_cell)
-                self.terrain_dict[new_cell.coord] = new_cell 
+                self.terrain_dict[new_cell.coord] = new_cell
 
     ####Functions for map editing
-    
+
     def replace_cell(self,location,t_type):
 
-        
+
 
         self.terrain_dict[location].terrain_type = t_type
 
         self.terrain_dict[location].sprite.image = self.terrain_dict[location].init_cell()
 
         self.terrain_dict[location].set_size()
-    
-          
+
+
     def map_editor_function(self,x,y):
-       
-        
+
+
 
         for coord in self.terrain_dict:
             cell = self.terrain_dict[coord]
@@ -91,8 +91,8 @@ class Terrain(object):
                 elif cell.terrain_type == 'Mountain':
                     self.replace_cell(coord,'Grass')
 
-    
-            
+
+
                 break
 
     ####Functions for saving and loading maps
@@ -100,14 +100,14 @@ class Terrain(object):
 
         map_file = open("Map_Databases/" + map_num + ".txt","w")
 
-        
+
         cell_count_x = range(1,self.dimensions[0]+1)
         cell_count_y = range(1,self.dimensions[1]+1)
 
         for x in cell_count_x:
 
             for y in cell_count_y:
-        
+
 
                 terrain_type = self.terrain_dict[(y,x)].terrain_type
 
@@ -129,14 +129,14 @@ class Terrain(object):
 
         #First, delete current map
 
-        
+
         self.terrain_dict.clear()
         for cell in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Terrain_Unit]:
             Objects.game_obj.game_objects.remove(cell)
-        
-            
 
-        
+
+
+
         map_file = open("Map_Databases/" + map_num + ".txt","r")
 
         reconstruction_list = []
@@ -145,11 +145,11 @@ class Terrain(object):
         y_coord = 1
 
         for sym in map_file.read():
-            
+
             if sym == '-':
                 y_coord += 1
                 x_coord = 1
-            
+
             else:
 
                 if sym == '0':
@@ -175,22 +175,22 @@ class Terrain(object):
 
             x_pos = self.unit_size * x_coord-1
             y_pos = self.unit_size * y_coord-1
-            
+
             new_cell = Terrain_Unit(x = x_pos, y = y_pos, coord = (x_coord,y_coord), terrain_type=terrain_string, size=self.unit_size)
             self.terrain_dict[new_cell.coord] = new_cell
             Objects.game_obj.game_objects.append(new_cell)
-    
+
     ####Functions for navigation
     def return_click_location(self,x,y):
-        
-        for coord in self.terrain_dict[coord]:
-            
+
+        for coord in self.terrain_dict:
+
             cell = self.terrain_dict[coord]
 
             if cell.sprite.x - cell.sprite.width/2 < x < cell.sprite.x + cell.sprite.width/2 and \
                     cell.sprite.y - cell.sprite.height/2 < y < cell.sprite.y + cell.sprite.height/2:
-                    
-                    return cell
+
+                    return coord
 
 
     ####Functions for Dijkstra search
@@ -206,27 +206,111 @@ class Terrain(object):
 
     def Dijkstra_algorithm(self,start_node,end_node):
 
-        already_search = []
+        #for testing
+        cycle_counter = 0
+
+        already_searched = []
 
         shortest_path_value = {}
 
         previous_node = {}
 
-        search_que = {}
+        search_que = []
 
-        #Initial sets all distances as very large
+        #Initial sets all distances as very large, start node as zero
         for node in self.terrain_dict:
             shortest_path_value[node] = 10^10000
 
-        searching = True
+        shortest_path_value.update({start_node:0})
+
+        current_node = start_node
 
         #Begins search for the shortest path
-        while searching == True:
+        while True:
 
-            pass
+            neighbors = self.return_neighbors(current_node)
+            print('neighbor list',neighbors)
+
+            current_cell = self.terrain_dict[current_node]
+
+            #First find the distance from the current node to its neighbor node
+            print([loc for loc in neighbors if loc not in already_searched])
+            for coord in [loc for loc in neighbors if loc not in already_searched]:
+
+                neighbor_cell = self.terrain_dict[coord]
+                #print('neighbor cell', neighbor_cell)
+
+                neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
+
+
+                #Adds to total distance and compares to current shortest distance, changes if smaller
+
+                distance_to_start = shortest_path_value[current_node]
+                #print(distance_to_start)
+
+                total_distance = distance_to_start + neighbor_node_distance
+                #print('total distance',total_distance)
+
+                if total_distance < shortest_path_value[coord]:
+                    shortest_path_value.update({coord:total_distance})
+                    #print('shortest path for this node', coord, shortest_path_value[coord])
+                    previous_node.update({coord:current_node})
+                    #print('previous nodes',previous_node)
+
+                    #adds to search que if not already in the list
+                    if coord not in search_que:
+                        search_que.append(coord)
+                        #print('search que',search_que)
+                    else:
+                        pass
+
+            print('search que',search_que)
+            #After neighbors have been updated, sort priority que, update searched list, and do again unless the end has been reached
+
+            if current_node == end_node:
+                #path_list = []
+                print('found it!',current_node)
+                return current_node
+
+
+
+
+            already_searched.append(current_node)
+            print('already searched',already_searched)
+
+            current_node = search_que[0]
+
+            for node in search_que:
+                if shortest_path_value[node] < shortest_path_value[node]:
+                    current_node = node
+
+            search_que.remove(current_node)
+            print('new current node',current_node)
+
+            if end_node in search_que:
+                current_node = end_node
+
+            if cycle_counter >= 1000:
+                break
+            else:
+                cycle_counter += 1
+
+    def return_player_location(self,player_object):
+
+        (player_x,player_y) = (player_object.sprite.x,player_object.sprite.y)
+
+        for coord in self.terrain_dict:
+
+            cell = self.terrain_dict[coord]
+
+            if cell.sprite.x - cell.sprite.width/2 < player_x < cell.sprite.x + cell.sprite.width/2 and \
+                        cell.sprite.y - cell.sprite.height/2 < player_y < cell.sprite.y + cell.sprite.height/2:
+
+                        return coord
+
 
 class Terrain_Unit(object):
-    
+
     def __init__(self, x = 0, y = 0, coord = (0,0), terrain_type = None, size = 0, *args, **kwargs):
 
         self.x = x
@@ -250,7 +334,7 @@ class Terrain_Unit(object):
 
     def init_cell(self):
 
-        if self.terrain_type == 'Grass': 
+        if self.terrain_type == 'Grass':
             self.terrain_mov_mod = 1
 
             return Resources.grass_img

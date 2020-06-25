@@ -13,7 +13,7 @@ import Functions
 import Window
 import Screens
 
-Terrain.terrain_obj.construct_map('4')
+Terrain.terrain_obj.Dijkstra_algorithm((3,3),(4,4))
 
 ###
 #Game Window

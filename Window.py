@@ -2,6 +2,8 @@ import pyglet
 from pyglet.window import key,mouse
 import Objects
 import Terrain
+import Objects
+import Players
 
 
 window = pyglet.window.Window(500,500)
@@ -23,6 +25,11 @@ def on_mouse_press(x,y,button,modifiers):
 
     if mouse.LEFT and Objects.game_obj.game_state == 'Map Editor':
         Terrain.terrain_obj.map_editor_function(x,y)
+
+    #Run Dijskstra search
+    nav_list = Terrain.terrain_obj.Dijkstra_algorithm(Terrain.terrain_obj.return_player_location(Players.Test_Player),\
+        Terrain.terrain_obj.return_click_location(x,y))
+    print(nav_list)
     
 
 @window.event
