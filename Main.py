@@ -1,10 +1,10 @@
 #Import modules
-import pyglet 
+import pyglet
 import math
 import random
 from pyglet.window import mouse
 
-#Game files 
+#Game files
 import Objects
 import Players
 import Terrain
@@ -13,7 +13,7 @@ import Functions
 import Window
 import Screens
 
-Terrain.terrain_obj.Dijkstra_algorithm((3,3),(4,4))
+Terrain.terrain_obj.Dijkstra_algorithm((10,10),(15,15))
 
 ###
 #Game Window
@@ -29,16 +29,16 @@ Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse,Ter
 
 
 def update(dt):
-    
+
    Objects.game_obj.update(dt,camera)
-    
+
 
 
 @Window.window.event
 def on_draw():
-    
+
     Screens.screen_display(Objects.game_obj.game_state)
-    
+
 
 
 

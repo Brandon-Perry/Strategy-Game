@@ -229,12 +229,10 @@ class Terrain(object):
         while True:
 
             neighbors = self.return_neighbors(current_node)
-            print('neighbor list',neighbors)
 
             current_cell = self.terrain_dict[current_node]
 
             #First find the distance from the current node to its neighbor node
-            print([loc for loc in neighbors if loc not in already_searched])
             for coord in [loc for loc in neighbors if loc not in already_searched]:
 
                 neighbor_cell = self.terrain_dict[coord]
@@ -246,7 +244,6 @@ class Terrain(object):
                 #Adds to total distance and compares to current shortest distance, changes if smaller
 
                 distance_to_start = shortest_path_value[current_node]
-                #print(distance_to_start)
 
                 total_distance = distance_to_start + neighbor_node_distance
                 #print('total distance',total_distance)
@@ -264,19 +261,24 @@ class Terrain(object):
                     else:
                         pass
 
-            print('search que',search_que)
             #After neighbors have been updated, sort priority que, update searched list, and do again unless the end has been reached
 
             if current_node == end_node:
-                #path_list = []
-                print('found it!',current_node)
-                return current_node
+                path_list = [end_node]
+                search_node = current_node
+                while True:
+                    path_list.append(previous_node[search_node])
+
+                    if previous_node[search_node] == start_node:
+                        print(path_list)
+                        return path_list
+                    else:
+                        search_node = previous_node[search_node]
 
 
 
 
             already_searched.append(current_node)
-            print('already searched',already_searched)
 
             current_node = search_que[0]
 
@@ -285,7 +287,6 @@ class Terrain(object):
                     current_node = node
 
             search_que.remove(current_node)
-            print('new current node',current_node)
 
             if end_node in search_que:
                 current_node = end_node
