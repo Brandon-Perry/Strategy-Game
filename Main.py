@@ -13,7 +13,6 @@ import Functions
 import Window
 import Screens
 
-Terrain.terrain_obj.Dijkstra_algorithm((10,10),(15,15))
 
 ###
 #Game Window

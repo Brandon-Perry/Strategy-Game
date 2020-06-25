@@ -207,7 +207,6 @@ class Terrain(object):
     def Dijkstra_algorithm(self,start_node,end_node):
 
         #for testing
-        cycle_counter = 0
 
         already_searched = []
 
@@ -234,33 +233,34 @@ class Terrain(object):
 
             #First find the distance from the current node to its neighbor node
             for coord in [loc for loc in neighbors if loc not in already_searched]:
+                try:
+                    neighbor_cell = self.terrain_dict[coord]
+                    #print('neighbor cell', neighbor_cell)
 
-                neighbor_cell = self.terrain_dict[coord]
-                #print('neighbor cell', neighbor_cell)
-
-                neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
+                    neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
 
 
-                #Adds to total distance and compares to current shortest distance, changes if smaller
+                    #Adds to total distance and compares to current shortest distance, changes if smaller
 
-                distance_to_start = shortest_path_value[current_node]
+                    distance_to_start = shortest_path_value[current_node]
 
-                total_distance = distance_to_start + neighbor_node_distance
-                #print('total distance',total_distance)
+                    total_distance = distance_to_start + neighbor_node_distance
+                    #print('total distance',total_distance)
 
-                if total_distance < shortest_path_value[coord]:
-                    shortest_path_value.update({coord:total_distance})
-                    #print('shortest path for this node', coord, shortest_path_value[coord])
-                    previous_node.update({coord:current_node})
-                    #print('previous nodes',previous_node)
+                    if total_distance < shortest_path_value[coord]:
+                        shortest_path_value.update({coord:total_distance})
+                        #print('shortest path for this node', coord, shortest_path_value[coord])
+                        previous_node.update({coord:current_node})
+                        #print('previous nodes',previous_node)
 
-                    #adds to search que if not already in the list
-                    if coord not in search_que:
-                        search_que.append(coord)
-                        #print('search que',search_que)
-                    else:
-                        pass
-
+                        #adds to search que if not already in the list
+                        if coord not in search_que:
+                            search_que.append(coord)
+                            #print('search que',search_que)
+                        else:
+                            pass
+                except:
+                    pass
             #After neighbors have been updated, sort priority que, update searched list, and do again unless the end has been reached
 
             if current_node == end_node:
@@ -291,10 +291,7 @@ class Terrain(object):
             if end_node in search_que:
                 current_node = end_node
 
-            if cycle_counter >= 1000:
-                break
-            else:
-                cycle_counter += 1
+
 
     def return_player_location(self,player_object):
 
@@ -308,6 +305,12 @@ class Terrain(object):
                         cell.sprite.y - cell.sprite.height/2 < player_y < cell.sprite.y + cell.sprite.height/2:
 
                         return coord
+
+    def color_path(self,path):
+
+        for cell in path:
+
+            self.replace_cell(cell,'Black')
 
 
 class Terrain_Unit(object):
@@ -355,6 +358,9 @@ class Terrain_Unit(object):
 
             return Resources.swamp_img
 
+        if self.terrain_type == 'Black':
+            return Resources.black_img
+
     def set_size(self):
 
         self.sprite.image.height = self.sprite.image.width = self.size
@@ -365,4 +371,4 @@ class Terrain_Unit(object):
 
 
 ###Initializes Object###
-terrain_obj = Terrain(dimensions = (20,20), unit_size=10, batch = Resources.terrain_batch)
+terrain_obj = Terrain(dimensions = (100,100), unit_size=10, batch = Resources.terrain_batch)
