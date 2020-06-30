@@ -26,7 +26,6 @@ Objects.game_obj.game_objects.extend([Players.Test_Player,Objects.game_mouse,Ter
 
 
 
-
 def update(dt):
 
    Objects.game_obj.update(dt,camera)

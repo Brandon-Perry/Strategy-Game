@@ -35,7 +35,6 @@ class Terrain(object):
         self.key_handler = Objects.global_key_handler
 
 
-
     def update(self,dt,camera):
 
         #camera.update_sprite(self.sprite, self.x, self.y)
@@ -232,13 +231,18 @@ class Terrain(object):
             current_cell = self.terrain_dict[current_node]
 
             #First find the distance from the current node to its neighbor node
-            for coord in [loc for loc in neighbors if loc not in already_searched]:
+            for coord in [loc for loc in neighbors if loc not in already_searched or\
+                self.terrain_dict[loc].terrain_type != 'Mountain']:
                 try:
+
                     neighbor_cell = self.terrain_dict[coord]
-                    #print('neighbor cell', neighbor_cell)
+
+                    if neighbor_cell.terrain_type == 'Mountain':
+                        print('Mountain!')
 
                     neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
 
+                    neighbor_node_distance *= neighbor_cell.terrain_mov_mod
 
                     #Adds to total distance and compares to current shortest distance, changes if smaller
 
@@ -256,7 +260,6 @@ class Terrain(object):
                         #adds to search que if not already in the list
                         if coord not in search_que:
                             search_que.append(coord)
-                            #print('search que',search_que)
                         else:
                             pass
                 except:
@@ -270,7 +273,7 @@ class Terrain(object):
                     path_list.append(previous_node[search_node])
 
                     if previous_node[search_node] == start_node:
-                        print(path_list)
+                        path_list = path_list[::-1]
                         return path_list
                     else:
                         search_node = previous_node[search_node]
@@ -305,6 +308,22 @@ class Terrain(object):
                         cell.sprite.y - cell.sprite.height/2 < player_y < cell.sprite.y + cell.sprite.height/2:
 
                         return coord
+
+    def return_cell_position(self,cell):
+        x = self.terrain_dict[cell].x
+        y = self.terrain_dict[cell].y
+
+        return x,y
+
+    def return_list_cell_positions(self,cell_list):
+
+        pos_list = []
+
+        for cell in cell_list:
+            new_entry = self.return_cell_position(cell)
+            pos_list.append(new_entry)
+
+        return pos_list
 
     def color_path(self,path):
 
@@ -371,4 +390,4 @@ class Terrain_Unit(object):
 
 
 ###Initializes Object###
-terrain_obj = Terrain(dimensions = (100,100), unit_size=10, batch = Resources.terrain_batch)
+terrain_obj = Terrain(dimensions = (50,50), unit_size=10, batch = Resources.terrain_batch)

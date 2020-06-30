@@ -28,9 +28,16 @@ def on_mouse_press(x,y,button,modifiers):
 
     #Run Dijskstra search
     if mouse.LEFT and Objects.game_obj.game_state == 'Main':
-        nav_list = Terrain.terrain_obj.Dijkstra_algorithm(Terrain.terrain_obj.return_player_location(Players.Test_Player),\
-            Terrain.terrain_obj.return_click_location(x,y))
-        Terrain.terrain_obj.color_path(nav_list)
+        player_cell = Players.Test_Player.return_player_cell()
+        destination_cell = Terrain.terrain_obj.return_click_location(x,y)
+        nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
+
+        nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
+
+        Players.Test_Player.nav_path = nav_path
+        Players.Test_Player.navigation = True
+        print(nav_path)
+
 
 
 @window.event

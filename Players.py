@@ -2,6 +2,7 @@ import pyglet
 import Resources
 import Physical_Object
 import Objects
+import Terrain
 
 
 import math
@@ -11,7 +12,7 @@ import Functions
 import random
 
 
-  
+
 class Player(Physical_Object.PhyiscalObject):
 
     def __init__(self,x=0,y=0,*args,**kwargs):
@@ -25,9 +26,9 @@ class Player(Physical_Object.PhyiscalObject):
         #Ship physics
         self.speed = 300.0
         self.mass = 1.0
-        self.rotate_speed = 125
+        self.rotate_speed = 8
         self.rotation = 0
-        
+
         #Ship handling
         self.key_handler = Objects.global_key_handler
         self.mouse_handler = Objects.global_mouse_handler
@@ -35,18 +36,23 @@ class Player(Physical_Object.PhyiscalObject):
         #Player's attributes
         self.lives = 3
 
+        #Handles navigation
+        self.navigation = False
+        self.nav_path = []
+        self.nav_index = 0
+
     def update(self,dt, camera):
 
         super(Player,self).update(dt, camera)
         self.sprite.rotation = self.rotation
 
         if self.key_handler[key.W]:
-            
+
             angle_radians = -math.radians(self.rotation)
 
             vector_x = math.cos(angle_radians) * self.speed * dt
             vector_y = math.sin(angle_radians) * self.speed * dt
-            
+
             self.x += vector_x
             self.y += vector_y
 
@@ -55,7 +61,7 @@ class Player(Physical_Object.PhyiscalObject):
 
             vector_x = math.cos(angle_radians) * self.speed * dt
             vector_y = math.sin(angle_radians) * self.speed * dt
-            
+
             self.x -= vector_x
             self.y -= vector_y
 
@@ -65,8 +71,75 @@ class Player(Physical_Object.PhyiscalObject):
         if self.key_handler[key.D]:
             self.rotation += self.rotate_speed * dt
 
-        
+        #Handles navigation
+        if self.navigation == True:
+            self.navigate_path(self.nav_path[self.nav_index],dt)
+
+    def navigate_path(self,point,dt):
+
+        ####First rotate to the correct position
+
+        #Find angle between current position and point
+
+        #angle changed to negative because the way pyglet sets object orientation
+
+        angle_to_point = -math.degrees(Functions.angle(point_1=(self.x,self.y),point_2=point))
+
+        if math.fmod(self.rotation, 360) > angle_to_point:
+            if math.fmod(self.rotation,360) - angle_to_point < self.rotate_speed:
+                self.rotation = angle_to_point
+            else:
+                self.rotation -= self.rotate_speed
+
+        if math.fmod(self.rotation, 360) < angle_to_point:
+            if angle_to_point - math.fmod(self.rotation,360) < self.rotate_speed:
+                self.rotation = angle_to_point
+            else:
+                self.rotation += self.rotate_speed
 
 
+        if math.fmod(self.rotation,360) == angle_to_point and self.sprite.position != point:
+            angle_radians = -math.radians(self.rotation)
+
+            vector_x = math.cos(angle_radians) * self.speed * dt
+            vector_y = math.sin(angle_radians) * self.speed * dt
+
+            #print('vectorx',vector_x)
+            #print('vectory',vector_y)
+
+            if ((vector_x > 0 and self.x + vector_x > point[0]) or (vector_x < 0 and self.x - vector_x < point[0])) and \
+                ((vector_y > 0 and self.y + vector_y > point[1]) or (vector_y < 0 and self.y - vector_y < point[1])):
+                self.x,self.y = point
+            else:
+
+                self.x += vector_x
+                self.y += vector_y
+
+
+        if (int(self.x),int(self.y)) == point:
+
+            if point == self.nav_path[-1]:
+                self.nav_index = 0
+                self.navigation = False
+                print('here!')
+
+            else:
+                self.nav_index += 1
+
+
+        #print('sprite position',self.sprite.position)
+        #print('target position',point)
+        #print('`````````')
+
+    def return_player_cell(self):
+
+        for coord in Terrain.terrain_obj.terrain_dict:
+
+            cell = Terrain.terrain_obj.terrain_dict[coord]
+
+            if cell.sprite.x - cell.sprite.width/2 < self.x < cell.sprite.x + cell.sprite.width/2 and \
+                    cell.sprite.y - cell.sprite.height/2 < self.y < cell.sprite.y + cell.sprite.height/2:
+
+                    return coord
 ###Initializing Objects####
 Test_Player = Player(batch=Resources.player_batch)
