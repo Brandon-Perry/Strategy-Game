@@ -28,16 +28,36 @@ def on_mouse_press(x,y,button,modifiers):
 
     #Run Dijskstra search
     if mouse.LEFT and Objects.game_obj.game_state == 'Main':
-        player_cell = Players.Test_Player.return_player_cell()
-        destination_cell = Terrain.terrain_obj.return_click_location(x,y)
-        nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
+        #if player is selected player, run djikstra
+        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
+            if player.selected == True:
 
-        nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
+                player_cell = player.return_player_cell()
+                destination_cell = Terrain.terrain_obj.return_click_location(x,y)
+                nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
 
-        Players.Test_Player.nav_path = nav_path
-        Players.Test_Player.navigation = True
-        print(nav_path)
+                nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
 
+                player.nav_path = nav_path
+                player.navigation = True
+                print(nav_path)
+
+
+    #Select player
+    if mouse.RIGHT and Objects.game_obj.game_state == 'Main':
+
+        #Runs through players and makes player.selected = True if within mouse coordinates
+        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
+            player_coord = player.sprite.position
+            half_width = player.sprite.width//2
+            half_height = player.sprite.height//2
+            if (x >= player_coord[0] - half_width and x <= player_coord[0] + half_width) and \
+                (y >= player_coord[1] - half_height and y <= player_coord[1] + half_height):
+                player.selected = True
+                print(player.name, ' selected')
+            else:
+                player.selected = False
+                print(player.name,' unselected')
 
 
 @window.event

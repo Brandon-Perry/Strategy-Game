@@ -237,9 +237,6 @@ class Terrain(object):
 
                     neighbor_cell = self.terrain_dict[coord]
 
-                    if neighbor_cell.terrain_type == 'Mountain':
-                        print('Mountain!')
-
                     neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
 
                     neighbor_node_distance *= neighbor_cell.terrain_mov_mod
@@ -371,7 +368,7 @@ class Terrain_Unit(object):
             return Resources.hill_img
 
         if self.terrain_type =='Mountain':
-            self.terrain_mov_mod = 1000
+            self.terrain_mov_mod = math.inf
 
             return Resources.mountain_img
 

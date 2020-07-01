@@ -15,21 +15,22 @@ import random
 
 class Player(Physical_Object.PhyiscalObject):
 
-    def __init__(self,x=0,y=0,*args,**kwargs):
+    def __init__(self,x=20,y=20,name=None,*args,**kwargs):
         super().__init__(img=Resources.spider_tank,*args,**kwargs)
 
         self.x = x
         self.y = y
+        self.name = name
 
         self.sprite = pyglet.sprite.Sprite(img= Resources.spider_tank, batch = Resources.player_batch)
 
-        #Ship physics
+        #Player physics
         self.speed = 300.0
         self.mass = 1.0
         self.rotate_speed = 8
         self.rotation = 0
 
-        #Ship handling
+        #Player handling
         self.key_handler = Objects.global_key_handler
         self.mouse_handler = Objects.global_mouse_handler
 
@@ -40,6 +41,9 @@ class Player(Physical_Object.PhyiscalObject):
         self.navigation = False
         self.nav_path = []
         self.nav_index = 0
+
+        #Player selected
+        self.selected = False
 
     def update(self,dt, camera):
 
@@ -78,6 +82,9 @@ class Player(Physical_Object.PhyiscalObject):
         #Keeps player on discrete pixels
         self.x = int(round(self.x))
         self.y = int(round(self.y))
+
+        #if self.selected == True:
+            #print('selected true')
 
     def navigate_path(self,point,dt):
 
@@ -152,4 +159,5 @@ class Player(Physical_Object.PhyiscalObject):
 
                     return coord
 ###Initializing Objects####
-Test_Player = Player(batch=Resources.player_batch)
+Test_Player1 = Player(batch=Resources.player_batch,name = 'Test Player 1')
+Test_Player2 = Player(x=50,y=50,batch=Resources.player_batch, name = 'Test Player 2')
