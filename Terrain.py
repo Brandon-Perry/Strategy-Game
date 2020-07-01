@@ -274,6 +274,9 @@ class Terrain(object):
 
                     if previous_node[search_node] == start_node:
                         path_list = path_list[::-1]
+                        print(path_list)
+                        path_list = Functions.path_straightner(path_list)
+                        print(path_list)
                         return path_list
                     else:
                         search_node = previous_node[search_node]

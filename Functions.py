@@ -32,8 +32,33 @@ def find_neighbors(tuple):
     neighbor_list = [(x+1,y),(x-1,y),(x,y+1),(x,y-1),(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1)]
 
     return neighbor_list
- 
 
+def path_straightner(path):
+
+    #Looks through list and finds angle of direction at each point. If it's the same as before, then remove that previous one.
+
+    new_path = []
+
+    for coord in path:
+
+        if coord == path[0] or coord == path[1]:
+            new_path.append(coord)
+
+        else:
+
+            angle_between_points = angle(point_1=new_path[-1],point_2=coord)
+
+            angle_previous_points = angle(point_1=new_path[-2],point_2=new_path[-1])
+
+            if angle_between_points == angle_previous_points:
+
+                new_path.pop(-1)
+
+
+            new_path.append(coord)
+
+            if coord == path[-1]:
+                return new_path
 
 
 

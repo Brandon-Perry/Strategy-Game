@@ -75,6 +75,10 @@ class Player(Physical_Object.PhyiscalObject):
         if self.navigation == True:
             self.navigate_path(self.nav_path[self.nav_index],dt)
 
+        #Keeps player on discrete pixels
+        self.x = int(round(self.x))
+        self.y = int(round(self.y))
+
     def navigate_path(self,point,dt):
 
         ####First rotate to the correct position
@@ -97,8 +101,8 @@ class Player(Physical_Object.PhyiscalObject):
             else:
                 self.rotation += self.rotate_speed
 
-
-        if math.fmod(self.rotation,360) == angle_to_point and self.sprite.position != point:
+        #If player is at the correct angle, then go forward. If the point is within the vector-space, stop at the point instead.
+        if math.fmod(self.rotation,360) == angle_to_point and (int(self.x),int(self.y)) != point:
             angle_radians = -math.radians(self.rotation)
 
             vector_x = math.cos(angle_radians) * self.speed * dt
@@ -107,15 +111,21 @@ class Player(Physical_Object.PhyiscalObject):
             #print('vectorx',vector_x)
             #print('vectory',vector_y)
 
-            if ((vector_x > 0 and self.x + vector_x > point[0]) or (vector_x < 0 and self.x - vector_x < point[0])) and \
-                ((vector_y > 0 and self.y + vector_y > point[1]) or (vector_y < 0 and self.y - vector_y < point[1])):
-                self.x,self.y = point
+            if ((vector_x >= 0 and self.x + vector_x >= point[0]) or (vector_x <= 0 and self.x - vector_x <= point[0])) and \
+                ((vector_y >= 0 and self.y + vector_y >= point[1]) or (vector_y <= 0 and self.y - vector_y <= point[1])):
+                self.x = point[0]
+                self.y = point[1]
+                print('latched')
             else:
 
                 self.x += vector_x
                 self.y += vector_y
+                self.x = int(round(self.x))
+                self.y = int(round(self.y))
+                print('point',point)
+                print('position',self.x,self.y)
 
-
+        #If the player is at the point, then either adjust the point to the next in list or stop navigation if at end
         if (int(self.x),int(self.y)) == point:
 
             if point == self.nav_path[-1]:
