@@ -180,7 +180,7 @@ class Terrain(object):
             Objects.game_obj.game_objects.append(new_cell)
 
     ####Functions for navigation
-    def return_click_location(self,x,y):
+    def return_cell_index(self,x,y):
 
         for coord in self.terrain_dict:
 
@@ -207,6 +207,7 @@ class Terrain(object):
 
         #for testing
 
+
         already_searched = []
 
         shortest_path_value = {}
@@ -217,7 +218,7 @@ class Terrain(object):
 
         #Initial sets all distances as very large, start node as zero
         for node in self.terrain_dict:
-            shortest_path_value[node] = 10^10000
+            shortest_path_value[node] = math.inf
 
         shortest_path_value.update({start_node:0})
 
@@ -227,14 +228,16 @@ class Terrain(object):
         while True:
 
             neighbors = self.return_neighbors(current_node)
+            #print('neighbors',neighbors)
 
             current_cell = self.terrain_dict[current_node]
+            #print('current node',current_node)
 
             #First find the distance from the current node to its neighbor node
             for coord in [loc for loc in neighbors if loc not in already_searched or\
                 self.terrain_dict[loc].terrain_type != 'Mountain']:
                 try:
-
+                    #print('coord in find distance from current node to neighbor node',coord)
                     neighbor_cell = self.terrain_dict[coord]
 
                     neighbor_node_distance = Functions.distance((current_cell.x,current_cell.y),(neighbor_cell.x,neighbor_cell.y))
@@ -264,16 +267,20 @@ class Terrain(object):
             #After neighbors have been updated, sort priority que, update searched list, and do again unless the end has been reached
 
             if current_node == end_node:
+                #print('found the end node',end_node)
                 path_list = [end_node]
                 search_node = current_node
                 while True:
                     path_list.append(previous_node[search_node])
+                    #print('path list',path_list)
 
                     if previous_node[search_node] == start_node:
                         path_list = path_list[::-1]
-                        print(path_list)
+                        #print(path_list)
+                        #print('pathlist before straightner function',path_list)
                         path_list = Functions.path_straightner(path_list)
-                        print(path_list)
+                        #print(path_list)
+                        #print('final path list',path_list)
                         return path_list
                     else:
                         search_node = previous_node[search_node]
@@ -283,17 +290,69 @@ class Terrain(object):
 
             already_searched.append(current_node)
 
+            #print('already searched',already_searched)
+
             current_node = search_que[0]
 
             for node in search_que:
                 if shortest_path_value[node] < shortest_path_value[node]:
                     current_node = node
+            #print('new current node',current_node)
+
 
             search_que.remove(current_node)
+            #print('search que',search_que)
+
 
             if end_node in search_que:
                 current_node = end_node
 
+            #print("``````")
+
+    def move_distance_calc(self,entity):
+
+        start_node = self.return_cell_index(entity.x,entity.y)
+        #print('start node',start_node)
+
+        available_cells = []
+
+        for coord in self.terrain_dict:
+
+            #print(start_node)
+            #print(coord)
+
+            if coord == start_node:
+                continue
+
+            path_to_cell = self.Dijkstra_algorithm(start_node,coord)
+            #print('path to cell',path_to_cell)
+
+            #print('made it past djikstra')
+
+            sum_distance = 0
+
+            for pos in path_to_cell:
+
+                #print('pos',pos)
+
+                if pos != path_to_cell[0]:
+
+                    cell = self.terrain_dict[pos]
+
+                    previous_pos_index = path_to_cell.index(pos) - 1
+
+                    #print('previous_pos_index')
+
+                    sum_distance += cell.terrain_mov_mod * Functions.distance(point_1=pos,point_2=path_to_cell[previous_pos_index])
+
+            if sum_distance <= entity.move_points:
+                available_cells.append(coord)
+                #print('sum distance',sum_distance)
+
+            else:
+                pass
+        print(available_cells)
+        return available_cells
 
 
     def return_player_location(self,player_object):
@@ -390,4 +449,4 @@ class Terrain_Unit(object):
 
 
 ###Initializes Object###
-terrain_obj = Terrain(dimensions = (50,50), unit_size=10, batch = Resources.terrain_batch)
+terrain_obj = Terrain(dimensions = (20,20), unit_size=10, batch = Resources.terrain_batch)

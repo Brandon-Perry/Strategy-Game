@@ -42,6 +42,9 @@ class Player(Physical_Object.PhyiscalObject):
         self.nav_path = []
         self.nav_index = 0
 
+        #Action point restrictions
+        self.move_points = 5
+
         #Player selected
         self.selected = False
 
@@ -72,6 +75,7 @@ class Player(Physical_Object.PhyiscalObject):
         if self.key_handler[key.A]:
             self.rotation -= self.rotate_speed * dt
 
+
         if self.key_handler[key.D]:
             self.rotation += self.rotate_speed * dt
 
@@ -82,9 +86,6 @@ class Player(Physical_Object.PhyiscalObject):
         #Keeps player on discrete pixels
         self.x = int(round(self.x))
         self.y = int(round(self.y))
-
-        #if self.selected == True:
-            #print('selected true')
 
     def navigate_path(self,point,dt):
 
@@ -118,19 +119,21 @@ class Player(Physical_Object.PhyiscalObject):
             #print('vectorx',vector_x)
             #print('vectory',vector_y)
 
-            if ((vector_x >= 0 and self.x + vector_x >= point[0]) or (vector_x <= 0 and self.x - vector_x <= point[0])) and \
-                ((vector_y >= 0 and self.y + vector_y >= point[1]) or (vector_y <= 0 and self.y - vector_y <= point[1])):
+            goal_cell = Terrain.terrain_obj.terrain_dict[Terrain.terrain_obj.return_cell_index(point[0],point[1])]
+
+            if ((vector_x >= 0 and self.x + vector_x >= (goal_cell.x - goal_cell.size//2)) or (vector_x <= 0 and self.x - vector_x <= (goal_cell.x + goal_cell.size//2))) and \
+                ((vector_y >= 0 and self.y + vector_y >= (goal_cell.y - goal_cell.size//2)) or (vector_y <= 0 and self.y - vector_y <= (goal_cell.y + goal_cell.size//2))):
                 self.x = point[0]
                 self.y = point[1]
-                print('latched')
+                #print('latched')
             else:
 
                 self.x += vector_x
                 self.y += vector_y
-                self.x = int(round(self.x))
-                self.y = int(round(self.y))
-                print('point',point)
-                print('position',self.x,self.y)
+                #self.x = int(round(self.x))
+                #self.y = int(round(self.y))
+                #print('point',point)
+                #print('position',self.x,self.y)
 
         #If the player is at the point, then either adjust the point to the next in list or stop navigation if at end
         if (int(self.x),int(self.y)) == point:
@@ -158,6 +161,14 @@ class Player(Physical_Object.PhyiscalObject):
                     cell.sprite.y - cell.sprite.height/2 < self.y < cell.sprite.y + cell.sprite.height/2:
 
                     return coord
+
+
+
+
+
+
+
+
 ###Initializing Objects####
 Test_Player1 = Player(batch=Resources.player_batch,name = 'Test Player 1')
 Test_Player2 = Player(x=50,y=50,batch=Resources.player_batch, name = 'Test Player 2')

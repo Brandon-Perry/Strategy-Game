@@ -39,6 +39,9 @@ def path_straightner(path):
 
     new_path = []
 
+    if len(path) <= 2:
+        return path
+
     for coord in path:
 
         if coord == path[0] or coord == path[1]:

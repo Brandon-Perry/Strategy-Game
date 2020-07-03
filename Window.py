@@ -33,14 +33,13 @@ def on_mouse_press(x,y,button,modifiers):
             if player.selected == True:
 
                 player_cell = player.return_player_cell()
-                destination_cell = Terrain.terrain_obj.return_click_location(x,y)
+                destination_cell = Terrain.terrain_obj.return_cell_index(x,y)
                 nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
 
                 nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
 
                 player.nav_path = nav_path
                 player.navigation = True
-                print(nav_path)
 
 
     #Select player
@@ -55,6 +54,13 @@ def on_mouse_press(x,y,button,modifiers):
                 (y >= player_coord[1] - half_height and y <= player_coord[1] + half_height):
                 player.selected = True
                 print(player.name, ' selected')
+
+                #highlights which cells the selected player can move to
+                available_cells = Terrain.terrain_obj.move_distance_calc(player)
+                for cell in available_cells:
+                    Terrain.terrain_obj.terrain_dict[cell].terrain_type == 'Black'
+                    #print('reached init cell loop')
+                    Terrain.terrain_obj.terrain_dict[cell].sprite=Terrain.terrain_obj.terrain_dict[cell].init_cell()
             else:
                 player.selected = False
                 print(player.name,' unselected')
