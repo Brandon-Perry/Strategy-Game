@@ -311,80 +311,80 @@ class Terrain(object):
 
     def move_distance_calc(self,entity):
 
-        start_node = self.return_cell_index(entity.x,entity.y)
-        #print('start node',start_node)
-
         available_cells = []
 
         search_que = []
-        search_que.extend(Functions.find_neighbors(start_node))
+
+        start_node = self.return_cell_index(entity.x,entity.y)
 
         already_searched = [start_node]
 
+        beginning_neighbors = Functions.find_neighbors(start_node)
+
+        for node in beginning_neighbors:
+            if node in self.terrain_dict:
+                search_que.append(node)
+
         current_node = search_que[0]
 
+        test_count = 0
 
         while True:
-            try:
-                #print('current node',current_node)
-                path_to_cell = self.Dijkstra_algorithm(start_node,current_node)
-                #print('path to cell',path_to_cell)
-                sum_distance = 0
 
-                for pos in path_to_cell:
+            #print('search que',search_que)
 
-                    #print('pos',pos)
+            sum_distance = 0
 
-                    if pos != path_to_cell[0]:
+            path_list = self.Dijkstra_algorithm(start_node,current_node)
 
-                        cell = self.terrain_dict[pos]
+            for unit in path_list:
 
-                        previous_pos_index = path_to_cell.index(pos) - 1
+                if unit == path_list[0]:
+                    continue
 
-                        #print('previous_pos_index')
+                previous_index = path_list.index(unit) - 1
 
-                        sum_distance += cell.terrain_mov_mod * Functions.distance(point_1=pos,point_2=path_to_cell[previous_pos_index])
+                sum_distance += (Functions.distance(point_1=(unit),point_2=(path_list[previous_index])) * self.terrain_dict[unit].terrain_mov_mod)
 
-                if sum_distance <= entity.move_points:
-                    available_cells.append(current_node)
-                    #Terrain.terrain_obj.terrain_dict[current_node].terrain_type == 'Black'
-                    #print('reached init cell loop')
-                    #Terrain.terrain_obj.terrain_dict[current_node].sprite=Terrain.terrain_obj.terrain_dict[current_node].init_cell()
-                    #print('sum distance',sum_distance)
+            if sum_distance <= entity.move_points:
+                available_cells.append(current_node)
+                new_neighbors = Functions.find_neighbors(current_node)
+                search_que.extend([x for x in new_neighbors if x in self.terrain_dict and x not in already_searched and x not in search_que])
+                print('sum distance',current_node,sum_distance)
+            else:
+                print('too far',current_node)
+                self.replace_cell(current_node,'Yellow')
 
-                else:
-                    #print('didnt make it sum distance',sum_distance)
-                    #Terrain.terrain_obj.terrain_dict[current_node].terrain_type == 'Mountain'
-                    #print('reached init cell loop')
-                    #Terrain.terrain_obj.terrain_dict[current_node].sprite=Terrain.terrain_obj.terrain_dict[current_node].init_cell()
-                    pass
+            already_searched.append(current_node)
+            search_que.remove(current_node)
 
-                already_searched.append(current_node)
-                search_que.remove(current_node)
+            if len(search_que) == 0:
+                #print(available_cells)
+                return available_cells
 
-                if len(search_que) == 0:
-                    print(available_cells)
-                    return available_cells
-                else:
-                    current_node = search_que[0]
-                    new_neighbors = Functions.find_neighbors(current_node)
-                    search_que.extend([x for x in new_neighbors if x not in search_que and x not in already_searched])
-                    if len([x for x in new_neighbors if x not in search_que and x not in already_searched]) != 0:
-                        print('list comprehension isnt null')
-                        return available_cells
-                    for x in new_neighbors:
-                        if x in search_que or already_searched:
-                            print('neighbor in search que or already searched',current_node)
-                            #return available_cells
-                    #print('search que',search_que)
-                    #print('already searched',already_searched)
-            except:
-                search_que.remove(current_node)
-                already_searched.append(current_node)
-                if len(search_que) == 0:
-                    print(available_cells)
-                    return available_cells
-                current_node = search_que[0]
+            current_node = search_que[0]
+            #print(current_node)
+
+            test_count += 1
+            if test_count >= 1500:
+                for element in search_que:
+                    if element in already_searched:
+                        print('There are nodes in the search que that shouldnt be there')
+                temp_list = []
+                for element in self.terrain_dict:
+                    if element not in already_searched:
+                        temp_list.append(element)
+                print('These are the cells that were not searched',temp_list)
+                print('search_que',search_que)
+                print('ran into test limit')
+
+                return available_cells
+
+
+
+
+
+
 
     def return_player_location(self,player_object):
 
@@ -469,6 +469,9 @@ class Terrain_Unit(object):
 
         if self.terrain_type == 'Black':
             return Resources.black_img
+
+        if self.terrain_type == 'Yellow':
+            return Resources.yellow_img
 
     def set_size(self):
 

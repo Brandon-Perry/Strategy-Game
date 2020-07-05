@@ -18,7 +18,7 @@ mountain_img = pyglet.resource.image('Mountain.png')
 hill_img = pyglet.resource.image('Hill.png')
 swamp_img = pyglet.resource.image('Swamp.png')
 black_img = pyglet.resource.image('Black.png')
-
+yellow_img = pyglet.resource.image('Yellow.png')
 
 
 
@@ -32,15 +32,15 @@ def center_image(image):
 
     image.anchor_x = image.width // 2
     image.anchor_y = image.height // 2
-    
+
 
 def animation_center(anim):
-    
-    
+
+
     for f in anim.frames:
         f.image.anchor_x = f.image.width // 2
         f.image.anchor_y = f.image.height // 2
-    
+
 
 center_image(test_player)
 center_image(grass_img)
@@ -49,6 +49,7 @@ center_image(hill_img)
 center_image(swamp_img)
 center_image(spider_tank)
 center_image(black_img)
+center_image(yellow_img)
 
 
 
