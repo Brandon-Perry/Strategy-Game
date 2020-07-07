@@ -180,7 +180,7 @@ class Terrain(object):
             Objects.game_obj.game_objects.append(new_cell)
 
     ####Functions for navigation
-    def return_cell_index(self,x,y):
+    def return_sprite_index(self,x,y):
 
         for coord in self.terrain_dict:
 
@@ -188,6 +188,17 @@ class Terrain(object):
 
             if cell.sprite.x - cell.sprite.width/2 < x < cell.sprite.x + cell.sprite.width/2 and \
                     cell.sprite.y - cell.sprite.height/2 < y < cell.sprite.y + cell.sprite.height/2:
+
+                    return coord
+
+    def return_cell_index(self,x,y):
+
+        for coord in self.terrain_dict:
+
+            cell = self.terrain_dict[coord]
+
+            if cell.x - cell.size/2 < x < cell.x + cell.size/2 and \
+                    cell.y - cell.size/2 < y < cell.y + cell.size/2:
 
                     return coord
 
@@ -319,6 +330,9 @@ class Terrain(object):
 
         already_searched = [start_node]
 
+        print(start_node)
+        print(entity.x,entity.y)
+
         beginning_neighbors = Functions.find_neighbors(start_node)
 
         for node in beginning_neighbors:
@@ -327,7 +341,6 @@ class Terrain(object):
 
         current_node = search_que[0]
 
-        test_count = 0
 
         while True:
 
@@ -350,9 +363,9 @@ class Terrain(object):
                 available_cells.append(current_node)
                 new_neighbors = Functions.find_neighbors(current_node)
                 search_que.extend([x for x in new_neighbors if x in self.terrain_dict and x not in already_searched and x not in search_que])
-                print('sum distance',current_node,sum_distance)
+                #print('sum distance',current_node,sum_distance)
             else:
-                print('too far',current_node)
+                #print('too far',current_node)
                 self.replace_cell(current_node,'Yellow')
 
             already_searched.append(current_node)
@@ -365,20 +378,6 @@ class Terrain(object):
             current_node = search_que[0]
             #print(current_node)
 
-            test_count += 1
-            if test_count >= 1500:
-                for element in search_que:
-                    if element in already_searched:
-                        print('There are nodes in the search que that shouldnt be there')
-                temp_list = []
-                for element in self.terrain_dict:
-                    if element not in already_searched:
-                        temp_list.append(element)
-                print('These are the cells that were not searched',temp_list)
-                print('search_que',search_que)
-                print('ran into test limit')
-
-                return available_cells
 
 
 
@@ -386,16 +385,17 @@ class Terrain(object):
 
 
 
-    def return_player_location(self,player_object):
 
-        (player_x,player_y) = (player_object.sprite.x,player_object.sprite.y)
+    def return_player_cell(self,player_object):
+
+        (player_x,player_y) = (player_object.x,player_object.y)
 
         for coord in self.terrain_dict:
 
             cell = self.terrain_dict[coord]
 
-            if cell.sprite.x - cell.sprite.width/2 < player_x < cell.sprite.x + cell.sprite.width/2 and \
-                        cell.sprite.y - cell.sprite.height/2 < player_y < cell.sprite.y + cell.sprite.height/2:
+            if cell.x - cell.size/2 < player_x < cell.x + cell.size/2 and \
+                        cell.y - cell.size/2 < player_y < cell.y + cell.size/2:
 
                         return coord
 

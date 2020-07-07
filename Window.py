@@ -23,17 +23,20 @@ def on_mouse_motion(x,y,dx,dy):
 @window.event
 def on_mouse_press(x,y,button,modifiers):
 
-    if mouse.LEFT and Objects.game_obj.game_state == 'Map Editor':
+    if (button & mouse.LEFT) and Objects.game_obj.game_state == 'Map Editor':
         Terrain.terrain_obj.map_editor_function(x,y)
 
     #Run Dijskstra search
-    if mouse.LEFT and Objects.game_obj.game_state == 'Main':
+    if (button & mouse.LEFT) and Objects.game_obj.game_state == 'Main':
+        print('left selected')
         #if player is selected player, run djikstra
         for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
             if player.selected == True:
 
-                player_cell = player.return_player_cell()
-                destination_cell = Terrain.terrain_obj.return_cell_index(x,y)
+                player_cell = Terrain.terrain_obj.return_player_cell(player)
+                destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
+                print('left click, player cell',player_cell)
+                print('left click, destination cell',destination_cell)
                 nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
 
                 nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
@@ -43,8 +46,8 @@ def on_mouse_press(x,y,button,modifiers):
 
 
     #Select player
-    if mouse.RIGHT and Objects.game_obj.game_state == 'Main':
-
+    if (button & mouse.RIGHT) and Objects.game_obj.game_state == 'Main':
+        print('right selected')
         #Runs through players and makes player.selected = True if within mouse coordinates
         for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
             player_coord = player.sprite.position
@@ -53,7 +56,7 @@ def on_mouse_press(x,y,button,modifiers):
             if (x >= player_coord[0] - half_width and x <= player_coord[0] + half_width) and \
                 (y >= player_coord[1] - half_height and y <= player_coord[1] + half_height):
                 player.selected = True
-                print(player.name, ' selected')
+                print('right click player name', player.name, ' selected')
 
                 #highlights which cells the selected player can move to
                 available_cells = Terrain.terrain_obj.move_distance_calc(player)
@@ -63,7 +66,7 @@ def on_mouse_press(x,y,button,modifiers):
                     Terrain.terrain_obj.terrain_dict[cell].sprite=Terrain.terrain_obj.terrain_dict[cell].init_cell()
             else:
                 player.selected = False
-                print(player.name,' unselected')
+                print('right click',player.name,' unselected')
 
 
 @window.event

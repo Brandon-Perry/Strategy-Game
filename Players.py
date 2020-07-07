@@ -151,7 +151,7 @@ class Player(Physical_Object.PhyiscalObject):
         #print('target position',point)
         #print('`````````')
 
-    def return_player_cell(self):
+    def return_sprite_cell(self):
 
         for coord in Terrain.terrain_obj.terrain_dict:
 
