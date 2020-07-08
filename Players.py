@@ -170,5 +170,5 @@ class Player(Physical_Object.PhyiscalObject):
 
 
 ###Initializing Objects####
-Test_Player1 = Player(batch=Resources.player_batch,name = 'Test Player 1')
-Test_Player2 = Player(x=50,y=50,batch=Resources.player_batch, name = 'Test Player 2')
+Test_Player1 = Player(x=150,y=150,batch=Resources.player_batch,name = 'Test Player 1')
+Test_Player2 = Player(x=200,y=200,batch=Resources.player_batch, name = 'Test Player 2')

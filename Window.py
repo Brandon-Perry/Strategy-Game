@@ -4,6 +4,7 @@ import Objects
 import Terrain
 import Objects
 import Players
+import math
 
 
 window = pyglet.window.Window(500,500)
@@ -35,14 +36,21 @@ def on_mouse_press(x,y,button,modifiers):
 
                 player_cell = Terrain.terrain_obj.return_player_cell(player)
                 destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
-                print('left click, player cell',player_cell)
-                print('left click, destination cell',destination_cell)
-                nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
+                #print('left click, player cell',player_cell)
+                #print('left click, destination cell',destination_cell)
 
-                nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
+                if Terrain.terrain_obj.terrain_dict[destination_cell].terrain_mov_mod == math.inf:
+                    print('Cant navigate to this cell')
+                elif destination_cell not in Terrain.terrain_obj.highlighted_terrain:
+                    print('Cell is too far away or not navigatable')
+                else:
 
-                player.nav_path = nav_path
-                player.navigation = True
+                    nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
+
+                    nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
+
+                    player.nav_path = nav_path
+                    player.navigation = True
 
 
     #Select player
@@ -60,10 +68,8 @@ def on_mouse_press(x,y,button,modifiers):
 
                 #highlights which cells the selected player can move to
                 available_cells = Terrain.terrain_obj.move_distance_calc(player)
-                for cell in available_cells:
-                    Terrain.terrain_obj.terrain_dict[cell].terrain_type == 'Black'
-                    #print('reached init cell loop')
-                    Terrain.terrain_obj.terrain_dict[cell].sprite=Terrain.terrain_obj.terrain_dict[cell].init_cell()
+                Terrain.terrain_obj.reset_highlighted_terrain()
+                Terrain.terrain_obj.highlight_terrain_func(available_cells)
             else:
                 player.selected = False
                 print('right click',player.name,' unselected')

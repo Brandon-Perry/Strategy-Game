@@ -25,6 +25,8 @@ class Terrain(object):
 
         self.terrain_dict = {}
 
+        self.highlighted_terrain = {} #contains coord and original terrian_type
+
         #Runs init_terrain upon initialization
         self.init_terrain()
 
@@ -330,8 +332,8 @@ class Terrain(object):
 
         already_searched = [start_node]
 
-        print(start_node)
-        print(entity.x,entity.y)
+        #print(start_node)
+        #print(entity.x,entity.y)
 
         beginning_neighbors = Functions.find_neighbors(start_node)
 
@@ -344,29 +346,35 @@ class Terrain(object):
 
         while True:
 
-            #print('search que',search_que)
+            print('current node',current_node)
 
-            sum_distance = 0
+            if self.terrain_dict[current_node].terrain_mov_mod != math.inf:
 
-            path_list = self.Dijkstra_algorithm(start_node,current_node)
+                sum_distance = 0
 
-            for unit in path_list:
+                path_list = self.Dijkstra_algorithm(start_node,current_node)
 
-                if unit == path_list[0]:
-                    continue
+                for unit in path_list:
 
-                previous_index = path_list.index(unit) - 1
+                    if unit == path_list[0]:
+                        continue
 
-                sum_distance += (Functions.distance(point_1=(unit),point_2=(path_list[previous_index])) * self.terrain_dict[unit].terrain_mov_mod)
+                    previous_index = path_list.index(unit) - 1
 
-            if sum_distance <= entity.move_points:
-                available_cells.append(current_node)
-                new_neighbors = Functions.find_neighbors(current_node)
-                search_que.extend([x for x in new_neighbors if x in self.terrain_dict and x not in already_searched and x not in search_que])
-                #print('sum distance',current_node,sum_distance)
+                    sum_distance += (Functions.distance(point_1=(unit),point_2=(path_list[previous_index])) * self.terrain_dict[unit].terrain_mov_mod)
+
+                if sum_distance <= entity.move_points:
+                    available_cells.append(current_node)
+                    new_neighbors = Functions.find_neighbors(current_node)
+                    search_que.extend([x for x in new_neighbors if x in self.terrain_dict and x not in already_searched and x not in search_que])
+                    #print('sum distance',current_node,sum_distance)
+                else:
+                    #print('too far',current_node)
+                    #self.replace_cell(current_node,'Yellow')
+                    pass
             else:
-                #print('too far',current_node)
-                self.replace_cell(current_node,'Yellow')
+                #self.replace_cell(current_node,'Yellow')
+                pass
 
             already_searched.append(current_node)
             search_que.remove(current_node)
@@ -378,7 +386,20 @@ class Terrain(object):
             current_node = search_que[0]
             #print(current_node)
 
+    def highlight_terrain_func(self,coord_list):
+        #First add coords and original terrain types to dictionary
+        for coord in coord_list:
+            self.highlighted_terrain[coord] = self.terrain_dict[coord].terrain_type
 
+        #Then, go through and highlight cells
+        for coord in coord_list:
+            self.replace_cell(coord,'Yellow')
+
+    def reset_highlighted_terrain(self):
+        for coord in self.highlighted_terrain:
+            self.replace_cell(coord,self.highlighted_terrain[coord])
+
+        self.highlighted_terrain = {}
 
 
 
@@ -483,4 +504,4 @@ class Terrain_Unit(object):
 
 
 ###Initializes Object###
-terrain_obj = Terrain(dimensions = (20,20), unit_size=10, batch = Resources.terrain_batch)
+terrain_obj = Terrain(dimensions = (50,50), unit_size=10, batch = Resources.terrain_batch)
