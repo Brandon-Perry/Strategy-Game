@@ -113,6 +113,7 @@ class GamePlay(object):
 
     def remove_dead(self,dead_obj):
 
+        print(dead_obj)
         self.game_objects.remove(dead_obj)
 
         print('should be dead')

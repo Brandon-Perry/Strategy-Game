@@ -239,7 +239,9 @@ class Laser(object):
 
         for coord in [obj for obj in Terrain.terrain_obj.terrain_dict if \
             Terrain.terrain_obj.terrain_dict[obj].terrain_mov_mod == math.inf]:
+
             check_cell = Terrain.terrain_obj.terrain_dict[coord]
             if self.return_if_x_y_in_sprite_loc(check_cell.sprite.x,check_cell.sprite.y):
                 Objects.game_obj.remove_dead(self)
+                return
 
