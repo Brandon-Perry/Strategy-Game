@@ -21,7 +21,7 @@ class Camera(object):
         self.screen_height = screen_height
         self.zoom = 1.0
 
-        
+
 
     def zoom_in(self):
         self.zoom += .1
@@ -33,14 +33,14 @@ class Camera(object):
     def pan(self, offset_x, offset_y):
         self.x += offset_x
         self.y += offset_y
-    
+
 
     def update_sprite(self, sprite, world_x, world_y):
         sprite.x = (world_x - self.x) * self.zoom
         sprite.y = (world_y - self.y) * self.zoom
         sprite.scale = self.zoom
-        
-        
+
+
 
 
 
@@ -59,6 +59,9 @@ class GamePlay(object):
 
         #Game State - Tells the applications what ought to be ran on the screen. Includes things such as map mode, levels, etc.
         self.game_state = 'Main'
+        self.player_turn = True
+
+
 
 
     def update(self,dt, camera):
@@ -79,21 +82,41 @@ class GamePlay(object):
 
         if self.key_handler[key.LEFT]:
             camera.pan(-10,0)
-        
+
         if self.key_handler[key.RIGHT]:
             camera.pan(10,0)
 
         if self.key_handler[key.DOWN]:
             camera.pan(0,-10)
 
-
         #Handles Map Mode keys
 
         if self.key_handler[key.M]:
-            if self.game_state == 'Main':
-                self.game_state = 'Map Editor'
-            elif self.game_state == 'Map Editor':
-                self.game_state = 'Main'
+            self.switch_game_state()
+
+        if self.key_handler[key.T]:
+            self.next_turn()
+
+
+    def next_turn(self):
+        if self.player_turn == True:
+            self.player_turn = False
+
+        else:
+            self.player_turn = True
+
+    def switch_game_state(self):
+        if self.game_state == 'Main':
+            self.game_state = 'Map Editor'
+        elif self.game_state == 'Map Editor':
+            self.game_state = 'Main'
+
+    def remove_dead(self,dead_obj):
+
+        self.game_objects.remove(dead_obj)
+
+        print('should be dead')
+
 
 
 
@@ -131,13 +154,13 @@ class Mouse(object):
 
         if self.outside_left:
             camera.pan(-1,0)
-        
+
         if self.outside_right:
             camera.pan(1,0)
 
         if self.outside_up:
             camera.pan(0,-1)
-        
+
 
 
 

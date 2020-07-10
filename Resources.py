@@ -10,6 +10,7 @@ pyglet.resource.reindex()
 #Ship images
 test_player = pyglet.resource.image('Player.png')
 spider_tank = pyglet.resource.image('Spider_Tank.png')
+alien_tank = pyglet.resource.image('Alien_Tank.png')
 
 
 #Terrain images
@@ -19,6 +20,8 @@ hill_img = pyglet.resource.image('Hill.png')
 swamp_img = pyglet.resource.image('Swamp.png')
 black_img = pyglet.resource.image('Black.png')
 yellow_img = pyglet.resource.image('Yellow.png')
+laser_img = pyglet.resource.image('laser.png')
+
 
 
 
@@ -50,10 +53,14 @@ center_image(swamp_img)
 center_image(spider_tank)
 center_image(black_img)
 center_image(yellow_img)
-
+center_image(alien_tank)
+center_image(laser_img)
 
 
 #Batches
 
 player_batch = pyglet.graphics.Batch()
 terrain_batch = pyglet.graphics.Batch()
+enemy_batch = pyglet.graphics.Batch()
+label_batch = pyglet.graphics.Batch()
+effects_batch = pyglet.graphics.Batch()

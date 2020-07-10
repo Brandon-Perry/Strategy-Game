@@ -64,4 +64,14 @@ def path_straightner(path):
                 return new_path
 
 
-
+def player_selector(x,y,player):
+    player_coord = player.sprite.position
+    half_width = player.sprite.width//2
+    half_height = player.sprite.height//2
+    if (x >= player_coord[0] - half_width and x <= player_coord[0] + half_width) and \
+        (y >= player_coord[1] - half_height and y <= player_coord[1] + half_height):
+        player.selected = True
+        print('right click player name', player.name, ' selected')
+    else:
+        player.selected = False
+        print('right click',player.name,' unselected')

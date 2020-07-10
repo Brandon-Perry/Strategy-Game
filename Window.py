@@ -1,9 +1,11 @@
 import pyglet
 from pyglet.window import key,mouse
 import Objects
+import Functions
 import Terrain
 import Objects
 import Players
+import Enemy
 import math
 
 
@@ -30,10 +32,23 @@ def on_mouse_press(x,y,button,modifiers):
     #Run Dijskstra search
     if (button & mouse.LEFT) and Objects.game_obj.game_state == 'Main':
         print('left selected')
-        #if player is selected player, run djikstra
-        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
+        #if player is selected agent, run djikstra or fire weapon if click is on opposing side
+        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player or obj.__class__ == Enemy.Enemy]:
+
             if player.selected == True:
 
+                #Check if click interlaps with opposing side sprite
+                for agent in [obj for obj in Objects.game_obj.game_objects if (obj.__class__ == Players.Player or obj.__class__ == Enemy.Enemy)\
+                    and obj.selected == False]:
+                    if agent.return_if_x_y_in_sprite_loc(x,y):
+                        player.targeting = True
+                        player.target = agent
+                        return
+
+
+                    #If not, then navigate to cell
+
+                print('got to this point')
                 player_cell = Terrain.terrain_obj.return_player_cell(player)
                 destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
                 #print('left click, player cell',player_cell)
@@ -52,27 +67,26 @@ def on_mouse_press(x,y,button,modifiers):
                     player.nav_path = nav_path
                     player.navigation = True
 
+                    player.subtract_movement_score(nav_list)
+                    print(player.move_points)
+
 
     #Select player
     if (button & mouse.RIGHT) and Objects.game_obj.game_state == 'Main':
         print('right selected')
         #Runs through players and makes player.selected = True if within mouse coordinates
-        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
-            player_coord = player.sprite.position
-            half_width = player.sprite.width//2
-            half_height = player.sprite.height//2
-            if (x >= player_coord[0] - half_width and x <= player_coord[0] + half_width) and \
-                (y >= player_coord[1] - half_height and y <= player_coord[1] + half_height):
-                player.selected = True
-                print('right click player name', player.name, ' selected')
+        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player or obj.__class__ == Enemy.Enemy]:
 
-                #highlights which cells the selected player can move to
-                available_cells = Terrain.terrain_obj.move_distance_calc(player)
-                Terrain.terrain_obj.reset_highlighted_terrain()
-                Terrain.terrain_obj.highlight_terrain_func(available_cells)
-            else:
-                player.selected = False
-                print('right click',player.name,' unselected')
+            Functions.player_selector(x,y,player)
+
+        #highlights which cells the selected player can move to
+        selected_player = [obj for obj in Objects.game_obj.game_objects if (obj.__class__ == Players.Player or obj.__class__ == Enemy.Enemy)\
+            and obj.selected == True]
+        available_cells = Terrain.terrain_obj.move_distance_calc(selected_player[0])
+        Terrain.terrain_obj.reset_highlighted_terrain()
+        Terrain.terrain_obj.highlight_terrain_func(available_cells)
+
+
 
 
 @window.event

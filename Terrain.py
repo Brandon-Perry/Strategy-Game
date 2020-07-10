@@ -346,7 +346,7 @@ class Terrain(object):
 
         while True:
 
-            print('current node',current_node)
+            #print('current node',current_node)
 
             if self.terrain_dict[current_node].terrain_mov_mod != math.inf:
 

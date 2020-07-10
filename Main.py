@@ -12,6 +12,7 @@ import Resources
 import Functions
 import Window
 import Screens
+import Enemy
 
 
 ###
@@ -21,7 +22,7 @@ import Screens
 
 camera = Objects.Camera(Window.window.width, Window.window.height)
 
-Objects.game_obj.game_objects.extend([Players.Test_Player1,Players.Test_Player2,Objects.game_mouse,Terrain.terrain_obj])
+Objects.game_obj.game_objects.extend([Players.Test_Player1,Players.Test_Player2,Enemy.Enemy1,Objects.game_mouse,Terrain.terrain_obj])
 
 
 
