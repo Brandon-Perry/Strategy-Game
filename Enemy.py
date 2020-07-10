@@ -45,7 +45,7 @@ class Enemy(Agents.Agents):
         self.nav_index = 0
 
         #Action point restrictions
-        self.move_points = 10
+        self.move_points = 0
         self.max_move_points = 10
 
         #Enemy selected
