@@ -38,6 +38,9 @@ class Agents(object):
         self.navigation = False
         self.nav_path = []
         self.nav_index = 0
+        self.available_nav_coords = []
+        self.distance_to_nav_coords = {}
+
 
         #Action point restrictions
         self.move_points = 5
@@ -182,7 +185,6 @@ class Agents(object):
             new_laser = Laser(x=self.x, y=self.y, rotation=angle_to_point, target=self.target, batch=Resources.effects_batch)
             Objects.game_obj.game_objects.append(new_laser)
 
-
     def return_if_x_y_in_sprite_loc(self,x,y):
         if (self.sprite.x - self.sprite.width//2 <= x <= self.sprite.x + self.sprite.width//2) and \
             (self.sprite.y - self.sprite.height//2 <= y <= self.sprite.y + self.sprite.width//2):
@@ -190,6 +192,32 @@ class Agents(object):
         else:
             return False
 
+    def attack_target(self,target):
+
+        self.targeting = True
+        self.target = target
+
+    def handle_navigation(self,x,y):
+        player_cell = Terrain.terrain_obj.return_player_cell(self)
+        destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
+        #print('left click, player cell',player_cell)
+        #print('left click, destination cell',destination_cell)
+
+        if Terrain.terrain_obj.terrain_dict[destination_cell].terrain_mov_mod == math.inf:
+            print('Cant navigate to this cell')
+        elif destination_cell not in Terrain.terrain_obj.highlighted_terrain:
+            print('Cell is too far away or not navigatable')
+        else:
+
+            nav_list = Terrain.terrain_obj.Dijkstra_algorithm(player_cell,destination_cell)
+
+            nav_path = Terrain.terrain_obj.return_list_cell_positions(nav_list)
+
+            self.nav_path = nav_path
+            self.navigation = True
+
+            self.subtract_movement_score(nav_list)
+            #print(player.move_points)
 
 class Laser(object):
 
@@ -212,8 +240,6 @@ class Laser(object):
 
         super().__init__()
 
-        self.check_collision()
-
         self.sprite.rotation = self.rotation
 
         angle_radians = -math.radians(self.rotation)
@@ -224,6 +250,9 @@ class Laser(object):
         self.x += velocity_x * dt
         self.y += velocity_y * dt
         camera.update_sprite(self.sprite, self.x, self.y)
+
+        self.check_collision()
+
 
     def return_if_x_y_in_sprite_loc(self,x,y):
         if (self.sprite.x - self.sprite.width//2 <= x <= self.sprite.x + self.sprite.width//2) and \

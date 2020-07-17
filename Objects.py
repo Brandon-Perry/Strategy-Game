@@ -66,14 +66,11 @@ class GamePlay(object):
 
     def update(self,dt, camera):
 
+
         #Updates all the objects in the game_objects list
         for obj in self.game_objects:
             obj.update(dt, camera)
 
-        #Checks for dead objects and removes them
-        for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
-            self.game_objects.remove(to_remove)
-            del to_remove
 
         #Handles Camera panning operations from the keyboard
 
@@ -97,6 +94,10 @@ class GamePlay(object):
         if self.key_handler[key.T]:
             self.next_turn()
 
+        #Checks for dead objects and removes them
+        for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
+            self.game_objects.remove(to_remove)
+
 
     def next_turn(self):
         if self.player_turn == True:
@@ -116,7 +117,7 @@ class GamePlay(object):
         print(dead_obj)
         self.game_objects.remove(dead_obj)
 
-        print('should be dead')
+        del dead_obj.sprite
 
 
 

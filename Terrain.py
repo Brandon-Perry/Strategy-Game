@@ -364,7 +364,10 @@ class Terrain(object):
                     sum_distance += (Functions.distance(point_1=(unit),point_2=(path_list[previous_index])) * self.terrain_dict[unit].terrain_mov_mod)
 
                 if sum_distance <= entity.move_points:
+                    #if within move distance, append to entity's available cells and the distance to each cell
                     available_cells.append(current_node)
+                    entity.available_nav_coords.append(current_node)
+                    entity.distance_to_nav_coords[current_node] = sum_distance
                     new_neighbors = Functions.find_neighbors(current_node)
                     search_que.extend([x for x in new_neighbors if x in self.terrain_dict and x not in already_searched and x not in search_que])
                     #print('sum distance',current_node,sum_distance)

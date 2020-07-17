@@ -1,14 +1,14 @@
 import pyglet
 
 #sets pyglet resource path
-pyglet.resource.path = ['resources']
+pyglet.resource.path = ['Resources']
 pyglet.resource.reindex()
 
 
 
 
 #Ship images
-test_player = pyglet.resource.image('Player.png')
+#test_player = pyglet.resource.image('Player.png')
 spider_tank = pyglet.resource.image('Spider_Tank.png')
 alien_tank = pyglet.resource.image('Alien_Tank.png')
 
@@ -45,7 +45,7 @@ def animation_center(anim):
         f.image.anchor_y = f.image.height // 2
 
 
-center_image(test_player)
+#center_image(test_player)
 center_image(grass_img)
 center_image(mountain_img)
 center_image(hill_img)
