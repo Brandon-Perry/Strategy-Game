@@ -47,7 +47,7 @@ class Terrain(object):
 
 
     def init_terrain(self):
-        #Initializes a grid of grass cells the size of the specified dimensions
+        '''Initializes a grid of grass cells the size of self.dimensions'''
 
         for dim_x in range(0,self.dimensions[0]):
 
@@ -63,8 +63,7 @@ class Terrain(object):
     ####Functions for map editing
 
     def replace_cell(self,location,t_type):
-
-
+        '''takes a tile coordinate and changes it to the type that's specified in the arguments (must be string)'''
 
         self.terrain_dict[location].terrain_type = t_type
 
@@ -74,9 +73,8 @@ class Terrain(object):
 
 
     def map_editor_function(self,x,y):
-
-
-
+        '''Takes x,y coordinates and cycles through cell types (replace_cell). Code executed in Window.py when game_obj.game_state is in editor mode. \
+            Uses sprite locations so user can click on cell that they want'''
         for coord in self.terrain_dict:
             cell = self.terrain_dict[coord]
 
@@ -92,15 +90,12 @@ class Terrain(object):
                 elif cell.terrain_type == 'Mountain':
                     self.replace_cell(coord,'Grass')
 
-
-
                 break
 
     ####Functions for saving and loading maps
     def generate_map_data(self,map_num):
-
+        '''Edits text files in Map_Databases with numbers that represent each type of coordinate. To be used for reconstruction later'''
         map_file = open("Map_Databases/" + map_num + ".txt","w")
-
 
         cell_count_x = range(1,self.dimensions[0]+1)
         cell_count_y = range(1,self.dimensions[1]+1)
@@ -108,7 +103,6 @@ class Terrain(object):
         for x in cell_count_x:
 
             for y in cell_count_y:
-
 
                 terrain_type = self.terrain_dict[(y,x)].terrain_type
 
@@ -127,7 +121,7 @@ class Terrain(object):
 
 
     def construct_map(self,map_num):
-
+        '''Takes text file from Map_Databases and reconstructs the map for the user to use'''
         #First, delete current map
 
 
@@ -183,7 +177,7 @@ class Terrain(object):
 
     ####Functions for navigation
     def return_sprite_index(self,x,y):
-
+        '''Takes an x,y value and returns whichever tile sprite overlaps with that value'''
         for coord in self.terrain_dict:
 
             cell = self.terrain_dict[coord]
@@ -193,8 +187,9 @@ class Terrain(object):
 
                     return coord
 
-    def return_cell_index(self,x,y):
 
+    def return_cell_index(self,x,y):
+        '''Takes x,y and returns tile coord of whichever one's global coordinate overlaps'''
         for coord in self.terrain_dict:
 
             cell = self.terrain_dict[coord]
@@ -207,6 +202,7 @@ class Terrain(object):
 
     ####Functions for Dijkstra search
     def return_neighbors(self,coord):
+        '''Returns list of surrounding coordinates'''
 
         x = coord[0]
         y = coord[1]
@@ -217,9 +213,7 @@ class Terrain(object):
 
 
     def Dijkstra_algorithm(self,start_node,end_node):
-
-        #for testing
-
+        '''Djiskstra algorithm, returns list of tile coords that are efficient path. Argument takes tile coords, not global or sprite locations'''
 
         already_searched = []
 
@@ -322,7 +316,9 @@ class Terrain(object):
 
             #print("``````")
 
+
     def move_distance_calc(self,entity):
+        '''Takes Agent object and returns a list of tiles that they can move to given their total movement points'''
 
         available_cells = []
 
@@ -389,7 +385,9 @@ class Terrain(object):
             current_node = search_que[0]
             #print(current_node)
 
+
     def highlight_terrain_func(self,coord_list):
+        '''Takes a list of tiles and highlights them using replace_cell'''
         #First add coords and original terrain types to dictionary
         for coord in coord_list:
             self.highlighted_terrain[coord] = self.terrain_dict[coord].terrain_type
@@ -398,20 +396,17 @@ class Terrain(object):
         for coord in coord_list:
             self.replace_cell(coord,'Yellow')
 
+
     def reset_highlighted_terrain(self):
+        '''Resets the highlighted terrain with their original tiles'''
         for coord in self.highlighted_terrain:
             self.replace_cell(coord,self.highlighted_terrain[coord])
 
         self.highlighted_terrain = {}
 
 
-
-
-
-
-
     def return_player_cell(self,player_object):
-
+        '''Takes object and returns whichever cell they're on'''
         (player_x,player_y) = (player_object.x,player_object.y)
 
         for coord in self.terrain_dict:
@@ -424,13 +419,14 @@ class Terrain(object):
                         return coord
 
     def return_cell_position(self,cell):
+        '''Takes tile index and returns the global x,y coordinates'''
         x = self.terrain_dict[cell].x
         y = self.terrain_dict[cell].y
 
         return x,y
 
     def return_list_cell_positions(self,cell_list):
-
+        '''Takes a list of tiles and returns a list of their x,y values'''
         pos_list = []
 
         for cell in cell_list:
@@ -440,7 +436,7 @@ class Terrain(object):
         return pos_list
 
     def color_path(self,path):
-
+        '''Takes a list of tiles and turns them black'''
         for cell in path:
 
             self.replace_cell(cell,'Black')
@@ -470,6 +466,7 @@ class Terrain_Unit(object):
 
 
     def init_cell(self):
+        '''First, set tile object's terrain_type to whichever value. Then init_cell to change terrain_mov_mod. Returns sprite image.'''
 
         if self.terrain_type == 'Grass':
             self.terrain_mov_mod = 1
@@ -498,7 +495,7 @@ class Terrain_Unit(object):
             return Resources.yellow_img
 
     def set_size(self):
-
+        '''Sets the sprite's height and width based on self.size'''
         self.sprite.image.height = self.sprite.image.width = self.size
         Resources.center_image(self.sprite.image)
 

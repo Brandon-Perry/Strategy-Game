@@ -91,29 +91,30 @@ class GamePlay(object):
         if self.key_handler[key.M]:
             self.switch_game_state()
 
-        if self.key_handler[key.T]:
-            self.next_turn()
-
         #Checks for dead objects and removes them
         for to_remove in [obj for obj in game_obj.game_objects if obj.dead]:
             self.game_objects.remove(to_remove)
 
 
     def next_turn(self):
+        '''Shuffles between player and enemy's turn (player_turn = True or False)'''
         if self.player_turn == True:
             self.player_turn = False
 
         else:
             self.player_turn = True
 
+
     def switch_game_state(self):
+        '''Switches between main and map editor states'''
         if self.game_state == 'Main':
             self.game_state = 'Map Editor'
         elif self.game_state == 'Map Editor':
             self.game_state = 'Main'
 
-    def remove_dead(self,dead_obj):
 
+    def remove_dead(self,dead_obj):
+        '''Removes object from object list and deletes sprite'''
         print(dead_obj)
         self.game_objects.remove(dead_obj)
 

@@ -16,7 +16,7 @@ import Agents
 
 
 class Enemy(Agents.Agents):
-
+    '''Enemy object that plays against the player. Superclass = Agents'''
     def __init__(self, x=0, y=0, name=None, *args, **kwargs):
 
         self.x = x
@@ -48,13 +48,15 @@ class Enemy(Agents.Agents):
         self.navigation = False
         self.nav_path = []
         self.nav_index = 0
+        self.shot_prep_status = False
 
         #Action point restrictions
-        self.move_points = 0
+        self.move_points = 10
         self.max_move_points = 10
 
         #Enemy selected
         self.selected = False
+
 
     def update(self,dt, camera):
 
@@ -65,18 +67,22 @@ class Enemy(Agents.Agents):
         if self.navigation == True:
             self.navigate_path(self.nav_path[self.nav_index],dt)
 
-        #If it's the player's turn, then enemy has 0 points.
-        if Objects.game_obj.player_turn == True:
-            self.move_points = 0
-        if Objects.game_obj.player_turn == False and self.move_points == 0:
-            self.move_points = self.max_move_points
 
-        if self.key_handler[key.G]:
-            #start_node = Terrain.terrain_obj.return_cell_index(self.x,self.y)
-            self.handle_attacking(Players.Test_Player1)
+        #Handles changing turn
+        if self.key_handler[key.T]:
+            if Objects.game_obj.player_turn == True:
+                Objects.game_obj.player_turn = False
+                self.handle_enemy_turn()
+
+        #If the enemy is moving to make a shot, then check and see if it has reached its destination and make a shot if so
+        if self.shot_prep_status == True:
+            if self.navigation == False:
+                self.attack_target(self.target)
+                self.shot_prep_status = False
+
 
     def return_if_have_shot(self,start_node,target):
-
+        '''Uses linear equation to determine if, starting from a particular tile, if it has a clean shot at the target'''
         #First, define the starting and ending positions
         start_cell = Terrain.terrain_obj.terrain_dict[start_node]
         target_coord = Terrain.terrain_obj.return_cell_index(target.x,target.y)
@@ -137,7 +143,9 @@ class Enemy(Agents.Agents):
                 print('got to iter end')
                 return False
             
+
     def check_if_shot_available_surrounding_nodes(self,target):
+        '''Takes target, and using return_if_have_shot(self,start_node,target) determines if the object's available nodes have any available shots'''
         
         shot_list = []
 
@@ -155,7 +163,9 @@ class Enemy(Agents.Agents):
         elif len(shot_list) > 0:
             return shot_list
 
+
     def nav_to_closest_shot(self,shot_list):
+        '''Takes a list of tile coords, finds the shortest distance (dist func), and navigates to that coord'''
 
         shortest_distance = self.distance_to_nav_coords[shot_list[0]]
         shortest_node = shot_list[0]
@@ -168,8 +178,10 @@ class Enemy(Agents.Agents):
         destination_cell = Terrain.terrain_obj.terrain_dict[shortest_node]
         self.handle_navigation(destination_cell.x,destination_cell.y)
 
-    def handle_attacking(self,target):
 
+    def handle_attacking(self,target):
+        '''Takes target object and handles initial attacking sequence. If no available shot immediately, uses nav_to_closest shot to navigate to point /
+            turns prep_shot_status on to tell object that at end of navigation, take a shot (located in def update)'''
         #First, see if there's an open shot at current position
         self_node = Terrain.terrain_obj.return_cell_index(self.x,self.y)
 
@@ -187,8 +199,36 @@ class Enemy(Agents.Agents):
         else:
 
             self.nav_to_closest_shot(shot_list)
+            self.shot_prep_status = True
+            self.target = target
+    
         
+    def handle_enemy_turn(self):
+        '''Contains all the code for running the enemy object's turn.'''
+        #First, select self and return available terrain
+        available_coords = Terrain.terrain_obj.move_distance_calc(self)
+        #print('available coords',available_coords)
+        Terrain.terrain_obj.reset_highlighted_terrain()
+        Terrain.terrain_obj.highlight_terrain_func(available_coords)
 
+        #Choose target. Based on distance
+        distance_to_player = {}
+        for player in [obj for obj in Objects.game_obj.game_objects if obj.__class__ == Players.Player]:
+            print(player)
+            distance_to_player[player] = Functions.distance((self.x,self.y),(player.x,player.y))
+
+        distance = math.inf
+        chosen_player = None
+        for player in distance_to_player:
+            if distance_to_player[player] < distance:
+                chosen_player = player
+                distance = distance_to_player[player]
+        print(chosen_player)
+        #Attack chosen player
+        self.handle_attacking(chosen_player)
+
+        #Next turn
+        #Objects.game_obj.player_turn = True
 
 
 #Initializing Object

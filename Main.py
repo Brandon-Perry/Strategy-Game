@@ -29,9 +29,9 @@ Objects.game_obj.game_objects.extend([Players.Test_Player1,Players.Test_Player2,
 
 def update(dt):
 
-   Objects.game_obj.update(dt,camera)
+    Objects.game_obj.update(dt,camera)
 
-
+    #print(Enemy.Enemy1.available_nav_coords)
 
 @Window.window.event
 def on_draw():

@@ -14,7 +14,7 @@ import random
 
 
 class Agents(object):
-
+    '''Superclass of Player and Enemy'''
     def __init__(self, x=0.0, y=0.0, *args,**kwargs):
 
         self.sprite = pyglet.sprite.Sprite(*args, **kwargs)
@@ -60,8 +60,9 @@ class Agents(object):
         if self.targeting == True:
             self.fire_weapon(self.target)
 
-    def navigate_path(self,point,dt):
 
+    def navigate_path(self,point,dt):
+        '''Accepts global coordinate. Rotates to point and moves forward until it's at its destination. Uses self.nav_coords to follow multi-point path'''
         ####First rotate to the correct position
 
         #Find angle between current position and point
@@ -134,6 +135,7 @@ class Agents(object):
 
 
     def return_sprite_cell(self):
+        '''Returns whichever tile coordinate the Agent sprite is touching'''
 
         for coord in Terrain.terrain_obj.terrain_dict:
 
@@ -144,8 +146,9 @@ class Agents(object):
 
                     return coord
 
-    def subtract_movement_score(self,path_list):
 
+    def subtract_movement_score(self,path_list):
+        '''Takes the path_list of the object and substracts the distance from the movement score''''
         sum_distance = 0
 
         for unit in path_list:
@@ -159,8 +162,9 @@ class Agents(object):
 
         self.move_points -= sum_distance
 
-    def fire_weapon(self,target):
 
+    def fire_weapon(self,target):
+        '''Takes target, rotates to face target, and then if rotation complete, fires at target. Runs via update if targeting is True'''
         #First, aim at target
         angle_to_point = -math.degrees(Functions.angle(point_1=(self.x,self.y),point_2=(target.x,target.y)))
 
@@ -185,6 +189,7 @@ class Agents(object):
             new_laser = Laser(x=self.x, y=self.y, rotation=angle_to_point, target=self.target, batch=Resources.effects_batch)
             Objects.game_obj.game_objects.append(new_laser)
 
+
     def return_if_x_y_in_sprite_loc(self,x,y):
         if (self.sprite.x - self.sprite.width//2 <= x <= self.sprite.x + self.sprite.width//2) and \
             (self.sprite.y - self.sprite.height//2 <= y <= self.sprite.y + self.sprite.width//2):
@@ -192,12 +197,15 @@ class Agents(object):
         else:
             return False
 
-    def attack_target(self,target):
 
+    def attack_target(self,target):
+        '''Sets the Agent.target to the target and turns targeting on, which activates the fire_weapon method during update'''
         self.targeting = True
         self.target = target
 
+
     def handle_navigation(self,x,y):
+        '''Handles all navigation code for the agent. Use global coordinates. If the tile is too far or impassible, won't move.'''
         player_cell = Terrain.terrain_obj.return_player_cell(self)
         destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
         #print('left click, player cell',player_cell)
@@ -255,6 +263,7 @@ class Laser(object):
 
 
     def return_if_x_y_in_sprite_loc(self,x,y):
+        '''Checks to see if sprites overlap with other x,y position'''
         if (self.sprite.x - self.sprite.width//2 <= x <= self.sprite.x + self.sprite.width//2) and \
             (self.sprite.y - self.sprite.height//2 <= y <= self.sprite.y + self.sprite.width//2):
             return True
@@ -262,6 +271,7 @@ class Laser(object):
             return False
 
     def check_collision(self):
+        '''If laser comes into contact with mountain tile, dead laser. If contact with target, kill laser and target'''
         if self.target.return_if_x_y_in_sprite_loc(self.sprite.x,self.sprite.y):
             Objects.game_obj.remove_dead(self.target)
             Objects.game_obj.remove_dead(self)
