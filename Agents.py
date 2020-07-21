@@ -148,7 +148,7 @@ class Agents(object):
 
 
     def subtract_movement_score(self,path_list):
-        '''Takes the path_list of the object and substracts the distance from the movement score''''
+        '''Takes the path_list of the object and substracts the distance from the movement score'''
         sum_distance = 0
 
         for unit in path_list:
