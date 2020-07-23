@@ -23,6 +23,8 @@ class Agents(object):
         self.x = x
         self.y = y
 
+        #self.current_cell = Terrain.terrain_obj.return_cell_index(self.x,self.y)
+
         #Physics
         self.velocity_x = 0.0
         self.velocity_y = 0.0
@@ -51,9 +53,17 @@ class Agents(object):
 
 
     def update(self,dt, camera):
+
+
+        #Handles navigation
+        if self.navigation == True:
+            self.navigate_path(self.nav_path[self.nav_index],dt)
+
+        self.x,self.y = Terrain.terrain_obj.return_cell_position(self.current_cell)
+
         #Velocity and how it affects movement (dt is frame)
-        self.x += self.velocity_x * dt
-        self.y += self.velocity_y * dt
+        #self.x += self.velocity_x * dt
+        #self.y += self.velocity_y * dt
         camera.update_sprite(self.sprite, self.x, self.y)
 
         #Handles firing
@@ -85,16 +95,17 @@ class Agents(object):
 
         #If player is at the correct angle, then go forward. If the point is within the vector-space, stop at the point instead.
         if math.fmod(self.rotation,360) == angle_to_point and (int(self.x),int(self.y)) != point:
-            angle_radians = -math.radians(self.rotation)
+            #angle_radians = -math.radians(self.rotation)
 
-            vector_x = math.cos(angle_radians) * self.speed * dt
-            vector_y = math.sin(angle_radians) * self.speed * dt
+            #vector_x = math.cos(angle_radians) * self.speed * dt
+            #vector_y = math.sin(angle_radians) * self.speed * dt
 
             #print('vectorx',vector_x)
             #print('vectory',vector_y)
 
-            goal_cell = Terrain.terrain_obj.terrain_dict[Terrain.terrain_obj.return_cell_index(point[0],point[1])]
-
+            self.current_cell = Terrain.terrain_obj.return_cell_index(point[0],point[1])
+            print(self.current_cell)
+            '''
             if ((vector_x >= 0 and self.x + vector_x >= (goal_cell.x - goal_cell.size/2)) or (vector_x <= 0 and self.x - vector_x <= (goal_cell.x + goal_cell.size/2))) and \
                 ((vector_y >= 0 and self.y + vector_y >= (goal_cell.y - goal_cell.size/2)) or (vector_y <= 0 and self.y - vector_y <= (goal_cell.y + goal_cell.size/2))):
                 self.x = point[0]
@@ -110,7 +121,7 @@ class Agents(object):
                 #print('point',point)
                 #print('position',self.x,self.y)
 
-
+            '''
         #If the player is at the point, then either adjust the point to the next in list or stop navigation if at end
         if (int(self.x),int(self.y)) == point:
 
@@ -210,6 +221,7 @@ class Agents(object):
         destination_cell = Terrain.terrain_obj.return_sprite_index(x,y)
         #print('left click, player cell',player_cell)
         #print('left click, destination cell',destination_cell)
+        print(x,y)
 
         if Terrain.terrain_obj.terrain_dict[destination_cell].terrain_mov_mod == math.inf:
             print('Cant navigate to this cell')

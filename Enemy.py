@@ -22,6 +22,8 @@ class Enemy(Agents.Agents):
         self.x = x
         self.y = y
 
+        self.current_cell = Terrain.terrain_obj.return_cell_index(x,y)
+
         super().__init__(img=Resources.alien_tank,*args,**kwargs)
 
         self.x = x
@@ -62,11 +64,6 @@ class Enemy(Agents.Agents):
 
         super(Enemy,self).update(dt, camera)
         self.sprite.rotation = self.rotation
-
-        #Handles navigation
-        if self.navigation == True:
-            self.navigate_path(self.nav_path[self.nav_index],dt)
-
 
         #Handles changing turn
         if self.key_handler[key.T]:
@@ -116,7 +113,7 @@ class Enemy(Agents.Agents):
 
             #If searched has reached its end, then find neighbors and return false if mountains, else true
             if target_coord in available_coords:
-
+                
                 neighbor_list = []
                 for coord in available_coords:
                     neighbors = Functions.find_neighbors(coord)
@@ -124,13 +121,13 @@ class Enemy(Agents.Agents):
                         if neighbor not in neighbor_list and neighbor not in available_coords:
                             neighbor_list.append(neighbor)
                 available_coords.extend(neighbor_list)
-
+                
                 for coord in available_coords:
                     if Terrain.terrain_obj.terrain_dict[coord].terrain_mov_mod == math.inf:
                         #print('mountain the way')
                         return False
                 
-                #Terrain.terrain_obj.color_path(available_coords)
+                Terrain.terrain_obj.color_path(available_coords)
                 #print('has a shot')
                 return True
 

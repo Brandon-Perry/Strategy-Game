@@ -285,7 +285,7 @@ class Terrain(object):
                         path_list = path_list[::-1]
                         #print(path_list)
                         #print('pathlist before straightner function',path_list)
-                        path_list = Functions.path_straightner(path_list)
+                        #path_list = Functions.path_straightner(path_list)
                         #print(path_list)
                         #print('final path list',path_list)
                         return path_list

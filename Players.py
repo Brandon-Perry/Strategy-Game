@@ -20,6 +20,7 @@ class Player(Agents.Agents):
 
         self.x = x
         self.y = y
+        self.current_cell = Terrain.terrain_obj.return_cell_index(x,y)
         self.name = name
 
         self.sprite = pyglet.sprite.Sprite(img= Resources.spider_tank, batch = Resources.player_batch)
