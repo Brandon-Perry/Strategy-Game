@@ -114,20 +114,29 @@ class Enemy(Agents.Agents):
             #If searched has reached its end, then find neighbors and return false if mountains, else true
             if target_coord in available_coords:
                 
-                neighbor_list = []
-                for coord in available_coords:
-                    neighbors = Functions.find_neighbors(coord)
-                    for neighbor in neighbors:
-                        if neighbor not in neighbor_list and neighbor not in available_coords:
-                            neighbor_list.append(neighbor)
-                available_coords.extend(neighbor_list)
                 
+                test_lazer = Agents.Laser(x=None,y=None,rotation=math.degrees(Functions.angle(self.sprite.position,target.sprite.position)),target=None)
+                for coord in available_coords:
+                    test_lazer.sprite.x = Terrain.terrain_obj.terrain_dict[coord].x
+                    test_lazer.sprite.y = Terrain.terrain_obj.terrain_dict[coord].y
+                    print('laser position',test_lazer.sprite.x,test_lazer.sprite.y)
+
+                    for mountain in [obj for obj in Terrain.terrain_obj.terrain_dict if \
+                        Terrain.terrain_obj.terrain_dict[obj].terrain_mov_mod == math.inf]:
+                        mountain_cell = Terrain.terrain_obj.terrain_dict[mountain]
+                        #print('mountain cell position',mountain_cell.sprite.x,mountain_cell.sprite.y)
+                        if test_lazer.return_if_x_y_in_sprite_loc(mountain_cell.sprite.x,mountain_cell.sprite.y):
+                            print('mountain cell position',mountain_cell.sprite.x,mountain_cell.sprite.y)
+
+                            return False
+
+                '''
                 for coord in available_coords:
                     if Terrain.terrain_obj.terrain_dict[coord].terrain_mov_mod == math.inf:
                         #print('mountain the way')
                         return False
-                
-                Terrain.terrain_obj.color_path(available_coords)
+                '''
+                #Terrain.terrain_obj.color_path(available_coords)
                 #print('has a shot')
                 return True
 
