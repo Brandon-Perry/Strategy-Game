@@ -76,6 +76,8 @@ class Enemy(Agents.Agents):
             if self.navigation == False:
                 self.attack_target(self.target)
                 self.shot_prep_status = False
+                Objects.game_obj.next_turn()
+
 
 
     def return_if_have_shot(self,start_node,target):
@@ -87,12 +89,12 @@ class Enemy(Agents.Agents):
 
         #Linear equation parameters
         t = 10
-        x = start_cell.x
-        y = start_cell.y
-        bottom_fact = math.sqrt(((target_cell.x - start_cell.x) * (target_cell.x - start_cell.x)) + \
-                ((target_cell.y - start_cell.y) * (target_cell.y - start_cell.y)))
-        x_fact = (target_cell.x - start_cell.x) / bottom_fact
-        y_fact = (target_cell.y - start_cell.y) / bottom_fact
+        x = start_cell.sprite.x
+        y = start_cell.sprite.y
+        bottom_fact = math.sqrt(((target_cell.sprite.x - start_cell.sprite.x) * (target_cell.sprite.x - start_cell.sprite.x)) + \
+                ((target_cell.sprite.y - start_cell.sprite.y) * (target_cell.sprite.y - start_cell.sprite.y)))
+        x_fact = (target_cell.sprite.x - start_cell.sprite.x) / bottom_fact
+        y_fact = (target_cell.sprite.y - start_cell.sprite.y) / bottom_fact
 
         #List of cells that pass between two points
         available_coords = []
@@ -104,7 +106,7 @@ class Enemy(Agents.Agents):
             x += t * x_fact
             y += t * y_fact
 
-            new_coord = Terrain.terrain_obj.return_cell_index(x,y)
+            new_coord = Terrain.terrain_obj.return_sprite_index(x,y)
             #print(x,y)
             #print(new_coord)
 
@@ -115,18 +117,21 @@ class Enemy(Agents.Agents):
             if target_coord in available_coords:
                 
                 
-                test_lazer = Agents.Laser(x=None,y=None,rotation=math.degrees(Functions.angle(self.sprite.position,target.sprite.position)),target=None)
+                test_lazer = Agents.Laser(x=None,y=None,rotation=0,target=None)
+                
                 for coord in available_coords:
-                    test_lazer.sprite.x = Terrain.terrain_obj.terrain_dict[coord].x
-                    test_lazer.sprite.y = Terrain.terrain_obj.terrain_dict[coord].y
-                    print('laser position',test_lazer.sprite.x,test_lazer.sprite.y)
+                    test_lazer.sprite.x = Terrain.terrain_obj.terrain_dict[coord].sprite.x
+                    test_lazer.sprite.y = Terrain.terrain_obj.terrain_dict[coord].sprite.y
+                    test_lazer.rotation = -math.degrees(Functions.angle(point_1=(test_lazer.sprite.x,test_lazer.sprite.y),point_2=(target.sprite.x,target.sprite.y)))
+                    test_lazer.sprite.rotation = test_lazer.rotation
+                    #print('laser position',test_lazer.sprite.x,test_lazer.sprite.y)
 
                     for mountain in [obj for obj in Terrain.terrain_obj.terrain_dict if \
                         Terrain.terrain_obj.terrain_dict[obj].terrain_mov_mod == math.inf]:
                         mountain_cell = Terrain.terrain_obj.terrain_dict[mountain]
                         #print('mountain cell position',mountain_cell.sprite.x,mountain_cell.sprite.y)
                         if test_lazer.return_if_x_y_in_sprite_loc(mountain_cell.sprite.x,mountain_cell.sprite.y):
-                            print('mountain cell position',mountain_cell.sprite.x,mountain_cell.sprite.y)
+                            #print('mountain cell position',mountain_cell.sprite.x,mountain_cell.sprite.y)
 
                             return False
 

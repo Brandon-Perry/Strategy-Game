@@ -418,12 +418,14 @@ class Terrain(object):
 
                         return coord
 
+
     def return_cell_position(self,cell):
         '''Takes tile index and returns the global x,y coordinates'''
         x = self.terrain_dict[cell].x
         y = self.terrain_dict[cell].y
 
         return x,y
+
 
     def return_list_cell_positions(self,cell_list):
         '''Takes a list of tiles and returns a list of their x,y values'''
@@ -434,6 +436,7 @@ class Terrain(object):
             pos_list.append(new_entry)
 
         return pos_list
+
 
     def color_path(self,path):
         '''Takes a list of tiles and turns them black'''

@@ -177,7 +177,7 @@ class Agents(object):
     def fire_weapon(self,target):
         '''Takes target, rotates to face target, and then if rotation complete, fires at target. Runs via update if targeting is True'''
         #First, aim at target
-        angle_to_point = -math.degrees(Functions.angle(point_1=(self.x,self.y),point_2=(target.x,target.y)))
+        angle_to_point = -math.degrees(Functions.angle(point_1=(self.sprite.x,self.sprite.y),point_2=(target.sprite.x,target.sprite.y)))
 
         if math.fmod(self.rotation, 360) > angle_to_point:
 
@@ -239,6 +239,8 @@ class Agents(object):
             self.subtract_movement_score(nav_list)
             #print(player.move_points)
 
+
+
 class Laser(object):
 
     def __init__(self, x, y, rotation, target, *args,**kwargs):
@@ -260,7 +262,8 @@ class Laser(object):
 
         if self.dead == True:
             return
-
+        if self.sprite == None:
+            return
 
         super().__init__()
 
@@ -288,7 +291,7 @@ class Laser(object):
 
     def check_collision(self):
         '''If laser comes into contact with mountain tile, dead laser. If contact with target, kill laser and target'''
-        if self.target.return_if_x_y_in_sprite_loc(self.sprite.x,self.sprite.y):
+        if self.return_if_x_y_in_sprite_loc(self.target.sprite.x,self.target.sprite.y):
             Objects.game_obj.remove_dead(self.target)
             Objects.game_obj.remove_dead(self)
 
